@@ -1,0 +1,15 @@
+{
+  "name": "Cotação Grupo UNO",
+  "short_name": "UnoCota",
+  "start_url": "Index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1d4ed8",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/754/754848.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
