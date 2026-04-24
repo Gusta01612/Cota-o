@@ -1,4 +1,5 @@
 const DATA_TABELAS = [
+
 // TABELA 2X (Estrutura: Base para 10kg + Excedente) ---
   {"praca": "Araraquara - SP", "tipo": "2X", "vBase": 75.1, "vKg": 2.78, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
   {"praca": "Bauru - SP", "tipo": "2X", "vBase": 72.84, "vKg": 2.92, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
@@ -184,3 +185,135 @@ const DATA_TABELAS = [
 { "praca": "1-Interior-SP", "tipo": "UNO", "vBase": 55.00, "vKg": 0.70, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
 
  ];
+
+// --- NOVAS FUNCIONALIDADES ---
+function gerarPDF() {
+    try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert("Aguarde o carregamento da biblioteca...");
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // --- CONFIGURAÇÕES DE CORES E FONTES ---
+        const corPrimaria = [29, 78, 216]; // O azul #1d4ed8 do seu CSS
+        const corTexto = [30, 41, 59];    // O cinza escuro #1e293b
+        const corLinha = [226, 232, 240]; // Cor das bordas #e2e8f0
+
+        // 1. Número Sequencial
+        let sequencia = localStorage.getItem('cont_cotacao') || "1";
+        let seqFormatada = sequencia.padStart(4, '0');
+
+        // 2. Coleta de Dados da Interface
+        const praca = document.getElementById('praca').value;
+        const tipo = document.getElementById('tipo').value;
+        const peso = document.getElementById('peso').value || "0";
+        const vnf = document.getElementById('vnf').value || "0";
+        
+        // Valores Calculados
+        const vBase = document.getElementById('rBase').innerText;
+        const vExc = document.getElementById('rExc').innerText;
+        const vGris = document.getElementById('rGris').innerText;
+        const vAdv = document.getElementById('rAdv').innerText;
+        const vPed = document.getElementById('rPed').innerText;
+        const vTrans = document.getElementById('rTrans').innerText;
+        const vTotal = document.getElementById('rTotal').innerText;
+
+        // --- INÍCIO DO DESIGN DO PDF ---
+
+        // Cabeçalho - Faixa Azul Superior
+        doc.setFillColor(corPrimaria[0], corPrimaria[1], corPrimaria[2]);
+        doc.rect(0, 0, 210, 40, 'F');
+
+        // Nome da Empresa
+        doc.setTextColor(255, 255, 255);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(22);
+        doc.text("GRUPO UNO", 20, 20);
+        
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "normal");
+        doc.text("Logística e Transportes Integrados", 20, 28);
+
+        // Badge do Número da Cotação
+        doc.setFillColor(255, 255, 255);
+        doc.roundedRect(150, 12, 45, 18, 2, 2, 'F');
+        doc.setTextColor(corPrimaria[0], corPrimaria[1], corPrimaria[2]);
+        doc.setFont("helvetica", "bold");
+        doc.text("COTAÇÃO Nº", 172.5, 19, { align: "center" });
+        doc.setFontSize(14);
+        doc.text(seqFormatada, 172.5, 26, { align: "center" });
+
+        // Informações Gerais (Data e Destino)
+        doc.setTextColor(corTexto[0], corTexto[1], corTexto[2]);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", "bold");
+        doc.text("DATA DE EMISSÃO:", 20, 50);
+        doc.setFont("helvetica", "normal");
+        doc.text(new Date().toLocaleDateString('pt-BR'), 60, 50);
+
+        doc.setFont("helvetica", "bold");
+        doc.text("DESTINO:", 20, 56);
+        doc.setFont("helvetica", "normal");
+        doc.text(praca + " (" + tipo + ")", 60, 56);
+
+        // Tabela de Dados da Carga
+        doc.setDrawColor(corLinha[0], corLinha[1], corLinha[2]);
+        doc.line(20, 65, 190, 65);
+
+        // Títulos da Tabela
+        doc.setFont("helvetica", "bold");
+        doc.text("DESCRIÇÃO", 20, 75);
+        doc.text("DETALHES / VALORES", 190, 75, { align: "right" });
+        doc.line(20, 78, 190, 78);
+
+        // Linhas de Detalhe
+        const detalhes = [
+            ["Peso Declarado", peso + " Kg"],
+            ["Valor da Mercadoria (NF)", "R$ " + vnf],
+            ["Frete Peso (Base + Excedente)", vBase + " + " + vExc],
+            ["GRIS / Ad Valorem", vGris + " / " + vAdv],
+            ["Pedágio", vPed],
+            ["Transferência Total", vTrans]
+        ];
+
+        let y = 86;
+        detalhes.forEach(item => {
+            doc.setFont("helvetica", "normal");
+            doc.text(item[0], 20, y);
+            doc.text(item[1], 190, y, { align: "right" });
+            y += 8;
+        });
+
+        // Bloco de Total com Destaque
+        doc.setFillColor(241, 245, 249); // Fundo cinza claro
+        doc.rect(20, y + 5, 170, 20, 'F');
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("VALOR TOTAL DO FRETE", 25, y + 18);
+        doc.setTextColor(corPrimaria[0], corPrimaria[1], corPrimaria[2]);
+        doc.text(vTotal, 185, y + 18, { align: "right" });
+
+        // Rodapé / Notas
+        doc.setTextColor(100, 116, 139); // Cinza suave
+        doc.setFontSize(8);
+        doc.setFont("helvetica", "italic");
+        const aviso = "Observação: Esta cotação tem validade de 07 dias e está sujeita a reajustes conforme impostos ou taxas governamentais.";
+        doc.text(aviso, 105, 160, { align: "center" });
+
+        // --- SALVAMENTO E DOWNLOAD ---
+        const nomeArquivo = `COTACAO_UNO_${seqFormatada}.pdf`;
+        doc.save(nomeArquivo);
+
+        // Incrementar após o sucesso
+        let proximo = parseInt(sequencia) + 1;
+        localStorage.setItem('cont_cotacao', proximo);
+        if(document.getElementById('rSeq')) document.getElementById('rSeq').innerText = proximo.toString().padStart(3, '0');
+
+    } catch (error) {
+        console.error(error);
+        alert("Ocorreu um erro ao gerar o PDF. Verifique se preencheu todos os dados.");
+    }
+}
