@@ -1,7 +1,50 @@
 const DATA_TABELAS = [
+// TABELA 2X (Estrutura: Base para 10kg + Excedente) ---
+  {"praca": "Araraquara - SP", "tipo": "2X", "vBase": 75.1, "vKg": 2.78, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Bauru - SP", "tipo": "2X", "vBase": 72.84, "vKg": 2.92, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Campinas - SP", "tipo": "2X", "vBase": 53.92, "vKg": 1.54, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Marília - SP", "tipo": "2X", "vBase": 86.16, "vKg": 2.82, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Presidente Prudente - SP", "tipo": "2X", "vBase": 88.62, "vKg": 4.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Ribeirão Preto - SP", "tipo": "2X", "vBase": 75.1, "vKg": 2.78, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "São José do Rio Preto - SP", "tipo": "2X", "vBase": 86.2, "vKg": 3.76, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "São José dos Campos - SP", "tipo": "2X", "vBase": 53.92, "vKg": 1.54, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Blumenau - SC", "tipo": "2X", "vBase": 101.3, "vKg": 5.06, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Chapecó - SC", "tipo": "2X", "vBase": 158.54, "vKg": 10.32, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Criciúma - SC", "tipo": "2X", "vBase": 109.68, "vKg": 5.54, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Florianópolis - SC", "tipo": "2X", "vBase": 100.18, "vKg": 5.3, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Itajaí - SC", "tipo": "2X", "vBase": 101.46, "vKg": 5.1, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Joinville - SC", "tipo": "2X", "vBase": 93.06, "vKg": 4.46, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Lages - SC", "tipo": "2X", "vBase": 116.86, "vKg": 6.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Caxias do Sul - RS", "tipo": "2X", "vBase": 160.14, "vKg": 10.44, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Passo Fundo - RS", "tipo": "2X", "vBase": 159.36, "vKg": 10.38, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Porto Alegre - RS", "tipo": "2X", "vBase": 139.16, "vKg": 9.06, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Santa Maria - RS", "tipo": "2X", "vBase": 172.7, "vKg": 10.54, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Campos dos Goytacazes - RJ", "tipo": "2X", "vBase": 93.22, "vKg": 6.2, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Rio de Janeiro - RJ", "tipo": "2X", "vBase": 86.2, "vKg": 3.2, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Teresópolis - RJ", "tipo": "2X", "vBase": 87.44, "vKg": 3.7, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Volta Redonda - RJ", "tipo": "2X", "vBase": 86.2, "vKg": 3.2, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Curitiba - PR", "tipo": "2X", "vBase": 95.06, "vKg": 3.3, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Londrina - PR", "tipo": "2X", "vBase": 87.3, "vKg": 4.32, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Maringá - PR", "tipo": "2X", "vBase": 87.3, "vKg": 4.94, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Belo Horizonte - MG", "tipo": "2X", "vBase": 104.32, "vKg": 4.54, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Juiz de Fora - MG", "tipo": "2X", "vBase": 104.32, "vKg": 5.9, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Uberaba - MG", "tipo": "2X", "vBase": 87.38, "vKg": 4.34, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Uberlândia - MG", "tipo": "2X", "vBase": 91.94, "vKg": 4.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Goiânia - GO", "tipo": "2X", "vBase": 116.86, "vKg": 6.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Vitória - ES", "tipo": "2X", "vBase": 109.66, "vKg": 7.3, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Brasília - DF", "tipo": "2X", "vBase": 120.28, "vKg": 6.8, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+// ADD NORDESTE
+  {"praca": "Aracaju - SE", "tipo": "2X", "vBase": 149.1, "vKg": 9.38, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Feira de Santana - BA", "tipo": "2X", "vBase": 142.0, "vKg": 7.3, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Maceió - AL", "tipo": "2X", "vBase": 156.56, "vKg": 9.78, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Montes Claros - MG", "tipo": "2X", "vBase": 128.0, "vKg": 6.58, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Recife - PE", "tipo": "2X", "vBase": 165.24, "vKg": 10.16, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Salvador - BA", "tipo": "2X", "vBase": 142.0, "vKg": 7.3, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+  {"praca": "Vitória da Conquista - BA", "tipo": "2X", "vBase": 136.0, "vKg": 6.94, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5},
+
+
   // --- TABELA 3X (Estrutura: Base para 10kg + Excedente) ---
   { "praca": "Araraquara - SP", "tipo": "3X", "vBase": 112.65, "vKg": 4.17, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
-{ "praca": "Aracaju - SE", "tipo": "3X", "vBase": 223.65, "vKg": 14.07, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Bauru - SP", "tipo": "3X", "vBase": 109.26, "vKg": 4.38, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Campinas - SP", "tipo": "3X", "vBase": 80.88, "vKg": 2.31, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Marília - SP", "tipo": "3X", "vBase": 129.24, "vKg": 4.23, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
@@ -34,19 +77,20 @@ const DATA_TABELAS = [
   { "praca": "Goiânia - GO", "tipo": "3X", "vBase": 175.29, "vKg": 9.84, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Vitória - ES", "tipo": "3X", "vBase": 164.49, "vKg": 10.95, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Brasília - DF", "tipo": "3X", "vBase": 180.42, "vKg": 10.20, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
-// - add
- { "praca": "Feira de Santana - BA", "tipo": "3X", "vBase": 213.00, "vKg": 10.95, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+// - ADD NORDESTE
+  { "praca": "Aracaju - SE", "tipo": "3X", "vBase": 223.65, "vKg": 14.07, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Feira de Santana - BA", "tipo": "3X", "vBase": 213.00, "vKg": 10.95, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Maceió - AL", "tipo": "3X", "vBase": 234.84, "vKg": 14.67, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
- { "praca": "Montes Claros - MG", "tipo": "3X", "vBase": 192.00, "vKg": 9.87, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
- { "praca": "Recife - PE", "tipo": "3X", "vBase": 247.86 , "vKg": 15.24, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
- { "praca": "Salvador- BA", "tipo": "3X", "vBase": 213.00 , "vKg": 10.95, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
- { "praca": "Vitoria da Conquista - BA", "tipo": "3X", "vBase": 204.00 , "vKg": 10.41, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Montes Claros - MG", "tipo": "3X", "vBase": 192.00, "vKg": 9.87, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Recife - PE", "tipo": "3X", "vBase": 247.86 , "vKg": 15.24, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Salvador- BA", "tipo": "3X", "vBase": 213.00 , "vKg": 10.95, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Vitoria da Conquista - BA", "tipo": "3X", "vBase": 204.00 , "vKg": 10.41, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
 
   
 	
   // --- TABELA 4X (Estrutura: Base para 10kg + Excedente) ---
   { "praca": "Araraquara - SP", "tipo": "4X", "vBase": 150.20, "vKg": 5.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
-{ "praca": "Aracaju - SE", "tipo": "4X", "vBase": 298.20, "vKg": 18.76, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Aracaju - SE", "tipo": "4X", "vBase": 298.20, "vKg": 18.76, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Bauru - SP", "tipo": "4X", "vBase": 145.68, "vKg": 5.84, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Campinas - SP", "tipo": "4X", "vBase": 107.84, "vKg": 3.08, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Marília - SP", "tipo": "4X", "vBase": 172.32, "vKg": 5.64, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
@@ -79,11 +123,20 @@ const DATA_TABELAS = [
   { "praca": "Goiânia - GO", "tipo": "4X", "vBase": 233.72, "vKg": 13.12, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Vitória - ES", "tipo": "4X", "vBase": 219.32, "vKg": 14.60, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Brasília - DF", "tipo": "4X", "vBase": 240.56, "vKg": 13.60, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+// ADD NORDESTE
+  { "praca": "Aracaju - SE", "tipo": "4X", "vBase": 298.20, "vKg": 18.76, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Feira de Santana - BA", "tipo": "4X", "vBase": 284.00, "vKg": 14.60, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Maceió - AL", "tipo": "4X", "vBase": 313.12, "vKg": 19.56, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Montes Claros - MG", "tipo": "4X", "vBase": 256.00, "vKg": 13.16, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Recife - PE", "tipo": "4X", "vBase": 330.48 , "vKg": 20.32, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Salvador- BA", "tipo": "4X", "vBase": 284.00 , "vKg": 14.60, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Vitoria da Conquista - BA", "tipo": "4X", "vBase": 272.00 , "vKg": 13.00, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+
   
 
   // --- TABELA SOL (NOVA - Base para 10kg + Excedente) ---
   { "praca": "Araraquara - SP", "tipo": "SOL", "vBase": 37.55, "vKg": 1.39, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
-{ "praca": "Aracaju - SE", "tipo": "SOL", "vBase": 74.50, "vKg": 4.69, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Aracaju - SE", "tipo": "SOL", "vBase": 74.50, "vKg": 4.69, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Bauru - SP", "tipo": "SOL", "vBase": 36.42, "vKg": 1.46, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Campinas - SP", "tipo": "SOL", "vBase": 26.96, "vKg": 0.77, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Marília - SP", "tipo": "SOL", "vBase": 43.08, "vKg": 1.41, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
@@ -116,7 +169,18 @@ const DATA_TABELAS = [
   { "praca": "Goiânia - GO", "tipo": "SOL", "vBase": 58.43, "vKg": 3.28, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Vitória - ES", "tipo": "SOL", "vBase": 54.83, "vKg": 3.65, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
   { "praca": "Brasília - DF", "tipo": "SOL", "vBase": 60.14, "vKg": 3.40, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+// Nordeste
+  { "praca": "Aracaju - SE", "tipo": "SOL", "vBase": 74.55, "vKg": 4.69, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Feira de Santana - BA", "tipo": "SOL", "vBase": 71.00, "vKg": 3.65, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Maceió - AL", "tipo": "SOL", "vBase": 78.28, "vKg": 4.89, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Montes Claros - MG", "tipo": "SOL", "vBase": 64.00, "vKg": 3.29, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Recife - PE", "tipo": "SOL", "vBase": 82.62, "vKg": 5.08, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Salvador- BA", "tipo": "SOL", "vBase": 71.00 , "vKg": 3.65, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  { "praca": "Vitoria da Conquista - BA", "tipo": "SOL", "vBase": 68.00, "vKg": 3.47, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
 
-{ "praca": "Araraquara - SP", "tipo": "RISSO", "vBase": 31.00, "vKg": 0.45, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  // --- TABELA RISSO
+{ "praca": "1-Interior-SP", "tipo": "RISSO", "vBase": 31.00, "vKg": 0.45, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
+  // --- TABELA RISSO(UNO)
+{ "praca": "1-Interior-SP", "tipo": "UNO", "vBase": 55.00, "vKg": 0.70, "adv": 0.003, "grisP": 0.0008, "grisM": 3.5, "pedF": 100, "pedV": 4.5 },
 
  ];
