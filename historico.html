@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Cotações | Grupo UNO</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="UnoCota">
+    <style>
+        :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; padding: 15px; display: flex; justify-content: center; color: var(--txt); margin: 0; }
+        .container { width: 100%; max-width: 600px; }
+
+        /* Header */
+        .page-header { background: white; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; padding: 20px 25px; margin-bottom: 12px; }
+        .header-row { display: flex; align-items: center; justify-content: space-between; }
+        .back-link { font-size: 13px; font-weight: 700; color: var(--p); text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .page-title { font-size: 18px; font-weight: 800; color: var(--p); margin: 0; }
+        .btn-clear { font-size: 12px; color: #94a3b8; background: none; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; padding: 5px 10px; transition: 0.15s; }
+        .btn-clear:hover { color: #e11d48; border-color: #fca5a5; }
+
+        /* Filtros */
+        .filtros { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+        .filtro-btn { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; cursor: pointer; color: #64748b; transition: 0.15s; }
+        .filtro-btn.ativo { background: var(--p); color: white; border-color: var(--p); }
+
+        /* Busca */
+        .busca-wrap { position: relative; margin-top: 10px; }
+        .busca-wrap input { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; background: #f8fafc; color: var(--txt); }
+        .busca-wrap input:focus { border-color: var(--p); background: white; }
+
+        /* Stats */
+        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+        .stat-card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 12px 14px; }
+        .stat-label { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 3px; }
+        .stat-value { font-size: 18px; font-weight: 800; color: var(--p); }
+        .stat-value.green { color: #16a34a; }
+
+        /* Lista */
+        .list-wrap { }
+        .empty { text-align: center; color: #94a3b8; font-size: 15px; padding: 50px 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
+        .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+        .hist-item { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: 0.15s; position: relative; }
+        .hist-item:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(29,78,216,0.08); transform: translateY(-1px); }
+
+        .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+        .item-praca { font-weight: 800; font-size: 15px; color: var(--txt); }
+        .item-total { font-weight: 900; font-size: 16px; color: var(--p); white-space: nowrap; }
+
+        .item-mid { display: flex; gap: 6px; margin: 7px 0 5px; flex-wrap: wrap; align-items: center; }
+        .badge { display: inline-block; font-size: 10px; font-weight: 800; border-radius: 4px; padding: 2px 7px; }
+        .badge-tipo { background: #dbeafe; color: #1e40af; }
+        .badge-cubado { background: #fef3c7; color: #92400e; }
+        .badge-real { background: #dcfce7; color: #166534; }
+
+        .item-bot { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+        .item-bot span { display: flex; align-items: center; gap: 3px; }
+
+        /* Detalhes expandidos */
+        .item-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
+        .hist-item.expanded .item-detail { display: block; }
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; }
+        .detail-row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; border-bottom: 1px dashed #f1f5f9; }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-row .lbl { color: #64748b; }
+        .detail-row .val { font-weight: 700; color: var(--txt); }
+        .detail-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--p); margin-top: 10px; padding-top: 10px; border-top: 2px solid #dbeafe; }
+        .btn-recotar { width: 100%; margin-top: 10px; background: var(--p); color: white; border: none; border-radius: 8px; padding: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.15s; }
+        .btn-recotar:hover { background: #1e40af; }
+        .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: 0.15s; display: none; }
+        .hist-item:hover .btn-del { display: block; }
+        .btn-del:hover { color: #e11d48; background: #fff1f2; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <div class="page-header">
+        <div class="header-row">
+            <a class="back-link" href="index.html">← Nova Cotação</a>
+            <p class="page-title">Histórico</p>
+            <button class="btn-clear" onclick="limparTudo()">Limpar tudo</button>
+        </div>
+        <div class="busca-wrap">
+            <input type="text" id="busca" placeholder="🔍  Buscar por praça..." oninput="renderLista()">
+        </div>
+        <div class="filtros" id="filtros"></div>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="list-wrap" id="lista"></div>
+</div>
+
+<script>
+    const HIST_KEY = 'uno_historico';
+
+    function getHistorico() {
+        try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; }
+    }
+    function setHistorico(h) { localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
+
+    function fmt(v) { return Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function fmtKg(v) { return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg'; }
+
+    let filtroAtivo = 'TODOS';
+
+    function buildFiltros() {
+        const hist = getHistorico();
+        const tipos = ['TODOS', ...new Set(hist.map(h => h.tipo))];
+        const wrap = document.getElementById('filtros');
+        wrap.innerHTML = tipos.map(t => `
+            <button class="filtro-btn ${t === filtroAtivo ? 'ativo' : ''}" onclick="setFiltro('${t}')">${t}</button>
+        `).join('');
+    }
+
+    function setFiltro(t) { filtroAtivo = t; buildFiltros(); renderLista(); }
+
+    function buildStats(hist) {
+        const wrap = document.getElementById('statsRow');
+        if (hist.length === 0) { wrap.innerHTML = ''; return; }
+        const total = hist.reduce((s, h) => s + (h.total || 0), 0);
+        const maior = Math.max(...hist.map(h => h.total || 0));
+        wrap.innerHTML = `
+            <div class="stat-card"><div class="stat-label">Cotações</div><div class="stat-value">${hist.length}</div></div>
+            <div class="stat-card"><div class="stat-label">Ticket médio</div><div class="stat-value">${fmt(total / hist.length)}</div></div>
+            <div class="stat-card"><div class="stat-label">Maior frete</div><div class="stat-value green">${fmt(maior)}</div></div>
+        `;
+    }
+
+    function renderLista() {
+        let hist = getHistorico();
+        const busca = (document.getElementById('busca').value || '').toLowerCase();
+        if (filtroAtivo !== 'TODOS') hist = hist.filter(h => h.tipo === filtroAtivo);
+        if (busca) hist = hist.filter(h => (h.praca || '').toLowerCase().includes(busca));
+
+        buildStats(hist);
+        const lista = document.getElementById('lista');
+
+        if (hist.length === 0) {
+            lista.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Nenhuma cotação encontrada.</div>`;
+            return;
+        }
+
+        lista.innerHTML = hist.map((h, i) => {
+            const cubInfo = (h.alt > 0 && h.lar > 0 && h.comp > 0)
+                ? `${h.alt}×${h.lar}×${h.comp} m` : '';
+            return `
+            <div class="hist-item" id="item-${i}">
+                <button class="btn-del" onclick="deletarItem(event, ${i})" title="Remover">✕</button>
+                <div onclick="toggleDetail(${i})">
+                    <div class="item-top">
+                        <span class="item-praca">${h.praca}</span>
+                        <span class="item-total">${fmt(h.total)}</span>
+                    </div>
+                    <div class="item-mid">
+                        <span class="badge badge-tipo">${h.tipo}</span>
+                        ${h.usaCubado
+                            ? `<span class="badge badge-cubado">CUBADO ${cubInfo}</span>`
+                            : `<span class="badge badge-real">PESO REAL</span>`}
+                    </div>
+                    <div class="item-bot">
+                        <span>⚖️ ${fmtKg(h.pesoTarifado)}</span>
+                        <span>🧾 NF ${fmt(h.vnf)}</span>
+                        <span>🕐 ${h.data}</span>
+                    </div>
+                </div>
+                <div class="item-detail">
+                    <div class="detail-grid">
+                        <div class="detail-row"><span class="lbl">Peso real</span><span class="val">${fmtKg(h.pesoReal)}</span></div>
+                        ${h.pesoCubado > 0 ? `<div class="detail-row"><span class="lbl">Peso cubado</span><span class="val">${fmtKg(h.pesoCubado)}</span></div>` : ''}
+                        <div class="detail-row"><span class="lbl">Base (10kg)</span><span class="val">${fmt(h.base)}</span></div>
+                        <div class="detail-row"><span class="lbl">Excedente</span><span class="val">${fmt(h.exc)}</span></div>
+                        <div class="detail-row"><span class="lbl">GRIS</span><span class="val">${fmt(h.gris)}</span></div>
+                        <div class="detail-row"><span class="lbl">Ad Valorem</span><span class="val">${fmt(h.adv)}</span></div>
+                        <div class="detail-row"><span class="lbl">Pedágio</span><span class="val">${fmt(h.ped)}</span></div>
+                        <div class="detail-row"><span class="lbl">Transferência</span><span class="val">${fmt(h.transferencia)}</span></div>
+                        ${h.col > 0 ? `<div class="detail-row"><span class="lbl">Coleta</span><span class="val">${fmt(h.col)}</span></div>` : ''}
+                        ${h.ent > 0 ? `<div class="detail-row"><span class="lbl">Entrega</span><span class="val">${fmt(h.ent)}</span></div>` : ''}
+                    </div>
+                    <div class="detail-total"><span>TOTAL GERAL</span><span>${fmt(h.total)}</span></div>
+                    <button class="btn-recotar" onclick="recotar(${i})">🔄 Usar estes dados numa nova cotação</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function toggleDetail(i) {
+        const el = document.getElementById(`item-${i}`);
+        el.classList.toggle('expanded');
+    }
+
+    function deletarItem(e, i) {
+        e.stopPropagation();
+        const hist = getHistorico();
+        // Find the real index considering filter
+        const busca = (document.getElementById('busca').value || '').toLowerCase();
+        let filtrado = hist.map((h, idx) => ({ ...h, _idx: idx }));
+        if (filtroAtivo !== 'TODOS') filtrado = filtrado.filter(h => h.tipo === filtroAtivo);
+        if (busca) filtrado = filtrado.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        const realIdx = filtrado[i]._idx;
+        hist.splice(realIdx, 1);
+        setHistorico(hist);
+        buildFiltros();
+        renderLista();
+    }
+
+    function recotar(i) {
+        const hist = getHistorico();
+        let filtrado = hist.map((h, idx) => ({ ...h, _idx: idx }));
+        if (filtroAtivo !== 'TODOS') filtrado = filtrado.filter(h => h.tipo === filtroAtivo);
+        const busca = (document.getElementById('busca').value || '').toLowerCase();
+        if (busca) filtrado = filtrado.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        const item = filtrado[i];
+        const params = new URLSearchParams({
+            tipo: item.tipo, praca: item.praca,
+            peso: item.pesoReal, vnf: item.vnf,
+            col: item.col, ent: item.ent,
+            alt: item.alt || 0, lar: item.lar || 0, comp: item.comp || 0
+        });
+        window.location.href = `index.html?${params.toString()}`;
+    }
+
+    function limparTudo() {
+        if (!confirm('Limpar todo o histórico? Esta ação não pode ser desfeita.')) return;
+        localStorage.removeItem(HIST_KEY);
+        buildFiltros();
+        renderLista();
+    }
+
+    window.onload = () => { buildFiltros(); renderLista(); };
+</script>
+</body>
+</html>
