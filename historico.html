@@ -44,7 +44,7 @@
         .empty { text-align: center; color: #94a3b8; font-size: 15px; padding: 50px 20px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
         .empty-icon { font-size: 36px; margin-bottom: 10px; }
 
-        .hist-item { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: 0.15s; position: relative; }
+        .hist-item { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; transition: 0.15s; position: relative; }
         .hist-item:hover { border-color: #93c5fd; box-shadow: 0 4px 12px rgba(29,78,216,0.08); transform: translateY(-1px); }
 
         .item-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
@@ -56,9 +56,13 @@
         .badge-tipo { background: #dbeafe; color: #1e40af; }
         .badge-cubado { background: #fef3c7; color: #92400e; }
         .badge-real { background: #dcfce7; color: #166534; }
+        .badge-seq { background: #f1f5f9; color: #64748b; }
 
         .item-bot { font-size: 12px; color: #94a3b8; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
         .item-bot span { display: flex; align-items: center; gap: 3px; }
+
+        /* Clicável apenas na parte de cima */
+        .item-clickable { cursor: pointer; }
 
         /* Detalhes expandidos */
         .item-detail { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0; }
@@ -71,8 +75,13 @@
         .detail-total { display: flex; justify-content: space-between; font-size: 16px; font-weight: 900; color: var(--p); margin-top: 10px; padding-top: 10px; border-top: 2px solid #dbeafe; }
         .btn-recotar { width: 100%; margin-top: 10px; background: var(--p); color: white; border: none; border-radius: 8px; padding: 10px; font-weight: 700; font-size: 14px; cursor: pointer; transition: 0.15s; }
         .btn-recotar:hover { background: #1e40af; }
-        .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: 0.15s; display: none; }
-        .hist-item:hover .btn-del { display: block; }
+
+        /* Botão deletar: visível ao hover no desktop, sempre visível no mobile */
+        .btn-del { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #cbd5e1; cursor: pointer; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: 0.15s; }
+        @media (hover: hover) {
+            .btn-del { display: none; }
+            .hist-item:hover .btn-del { display: block; }
+        }
         .btn-del:hover { color: #e11d48; background: #fff1f2; }
     </style>
 </head>
@@ -132,55 +141,66 @@
         `;
     }
 
-    function renderLista() {
+    // Retorna lista filtrada com _idx = índice real no array completo
+    function getListaFiltrada() {
         let hist = getHistorico();
-        const busca = (document.getElementById('busca').value || '').toLowerCase();
-        if (filtroAtivo !== 'TODOS') hist = hist.filter(h => h.tipo === filtroAtivo);
-        if (busca) hist = hist.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        const busca = (document.getElementById('busca').value || '').toLowerCase().trim();
+        // Mapeia índice real antes de filtrar
+        let filtrado = hist.map((h, idx) => ({ ...h, _idx: idx }));
+        if (filtroAtivo !== 'TODOS') filtrado = filtrado.filter(h => h.tipo === filtroAtivo);
+        if (busca) filtrado = filtrado.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        return filtrado;
+    }
 
-        buildStats(hist);
+    function renderLista() {
+        const filtrado = getListaFiltrada();
+
+        buildStats(filtrado);
         const lista = document.getElementById('lista');
 
-        if (hist.length === 0) {
+        if (filtrado.length === 0) {
             lista.innerHTML = `<div class="empty"><div class="empty-icon">📭</div>Nenhuma cotação encontrada.</div>`;
             return;
         }
 
-        lista.innerHTML = hist.map((h, i) => {
+        lista.innerHTML = filtrado.map((h, i) => {
             const cubInfo = (h.alt > 0 && h.lar > 0 && h.comp > 0)
                 ? `${h.alt}×${h.lar}×${h.comp} m` : '';
+            const seqStr = h.seq ? `<span class="badge badge-seq">Nº ${String(h.seq).padStart(3,'0')}</span>` : '';
             return `
             <div class="hist-item" id="item-${i}">
                 <button class="btn-del" onclick="deletarItem(event, ${i})" title="Remover">✕</button>
-                <div onclick="toggleDetail(${i})">
+                <div class="item-clickable" onclick="toggleDetail(${i})">
                     <div class="item-top">
                         <span class="item-praca">${h.praca}</span>
                         <span class="item-total">${fmt(h.total)}</span>
                     </div>
                     <div class="item-mid">
+                        ${seqStr}
                         <span class="badge badge-tipo">${h.tipo}</span>
                         ${h.usaCubado
                             ? `<span class="badge badge-cubado">CUBADO ${cubInfo}</span>`
                             : `<span class="badge badge-real">PESO REAL</span>`}
                     </div>
                     <div class="item-bot">
-                        <span>⚖️ ${fmtKg(h.pesoTarifado)}</span>
+                        <span>⚖️ ${fmtKg(h.pesoTarifado || h.pesoReal)}</span>
                         <span>🧾 NF ${fmt(h.vnf)}</span>
-                        <span>🕐 ${h.data}</span>
+                        <span>🕐 ${h.data || '—'}</span>
                     </div>
                 </div>
                 <div class="item-detail">
                     <div class="detail-grid">
                         <div class="detail-row"><span class="lbl">Peso real</span><span class="val">${fmtKg(h.pesoReal)}</span></div>
                         ${h.pesoCubado > 0 ? `<div class="detail-row"><span class="lbl">Peso cubado</span><span class="val">${fmtKg(h.pesoCubado)}</span></div>` : ''}
+                        <div class="detail-row"><span class="lbl">Peso tarifado</span><span class="val">${fmtKg(h.pesoTarifado || h.pesoReal)}</span></div>
                         <div class="detail-row"><span class="lbl">Base (10kg)</span><span class="val">${fmt(h.base)}</span></div>
                         <div class="detail-row"><span class="lbl">Excedente</span><span class="val">${fmt(h.exc)}</span></div>
                         <div class="detail-row"><span class="lbl">GRIS</span><span class="val">${fmt(h.gris)}</span></div>
                         <div class="detail-row"><span class="lbl">Ad Valorem</span><span class="val">${fmt(h.adv)}</span></div>
                         <div class="detail-row"><span class="lbl">Pedágio</span><span class="val">${fmt(h.ped)}</span></div>
                         <div class="detail-row"><span class="lbl">Transferência</span><span class="val">${fmt(h.transferencia)}</span></div>
-                        ${h.col > 0 ? `<div class="detail-row"><span class="lbl">Coleta</span><span class="val">${fmt(h.col)}</span></div>` : ''}
-                        ${h.ent > 0 ? `<div class="detail-row"><span class="lbl">Entrega</span><span class="val">${fmt(h.ent)}</span></div>` : ''}
+                        ${(h.col > 0) ? `<div class="detail-row"><span class="lbl">Coleta</span><span class="val">${fmt(h.col)}</span></div>` : ''}
+                        ${(h.ent > 0) ? `<div class="detail-row"><span class="lbl">Entrega</span><span class="val">${fmt(h.ent)}</span></div>` : ''}
                     </div>
                     <div class="detail-total"><span>TOTAL GERAL</span><span>${fmt(h.total)}</span></div>
                     <button class="btn-recotar" onclick="recotar(${i})">🔄 Usar estes dados numa nova cotação</button>
@@ -196,13 +216,9 @@
 
     function deletarItem(e, i) {
         e.stopPropagation();
-        const hist = getHistorico();
-        // Find the real index considering filter
-        const busca = (document.getElementById('busca').value || '').toLowerCase();
-        let filtrado = hist.map((h, idx) => ({ ...h, _idx: idx }));
-        if (filtroAtivo !== 'TODOS') filtrado = filtrado.filter(h => h.tipo === filtroAtivo);
-        if (busca) filtrado = filtrado.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        const filtrado = getListaFiltrada();
         const realIdx = filtrado[i]._idx;
+        const hist = getHistorico();
         hist.splice(realIdx, 1);
         setHistorico(hist);
         buildFiltros();
@@ -210,17 +226,18 @@
     }
 
     function recotar(i) {
-        const hist = getHistorico();
-        let filtrado = hist.map((h, idx) => ({ ...h, _idx: idx }));
-        if (filtroAtivo !== 'TODOS') filtrado = filtrado.filter(h => h.tipo === filtroAtivo);
-        const busca = (document.getElementById('busca').value || '').toLowerCase();
-        if (busca) filtrado = filtrado.filter(h => (h.praca || '').toLowerCase().includes(busca));
+        const filtrado = getListaFiltrada();
         const item = filtrado[i];
         const params = new URLSearchParams({
-            tipo: item.tipo, praca: item.praca,
-            peso: item.pesoReal, vnf: item.vnf,
-            col: item.col, ent: item.ent,
-            alt: item.alt || 0, lar: item.lar || 0, comp: item.comp || 0
+            tipo:   item.tipo   || '',
+            praca:  item.praca  || '',
+            peso:   item.pesoReal || 0,
+            vnf:    item.vnf    || 0,
+            coleta: item.col    || 0,
+            entrega:item.ent    || 0,
+            alt:    item.alt    || 0,
+            lar:    item.lar    || 0,
+            comp:   item.comp   || 0
         });
         window.location.href = `index.html?${params.toString()}`;
     }
@@ -228,6 +245,7 @@
     function limparTudo() {
         if (!confirm('Limpar todo o histórico? Esta ação não pode ser desfeita.')) return;
         localStorage.removeItem(HIST_KEY);
+        filtroAtivo = 'TODOS';
         buildFiltros();
         renderLista();
     }
