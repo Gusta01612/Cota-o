@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel Administrativo | Grupo UNO</title>
+    <style>
+        :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; --danger: #ef4444; --success: #10b981; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: var(--p); }
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .card-menu { background: white; padding: 25px; border-radius: 15px; text-decoration: none; color: inherit; 
+                    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.3s; border-left: 5px solid var(--p); }
+        .card-menu:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .stat-value { font-size: 20px; font-weight: 800; color: var(--p); display: block; margin-top: 10px; }
+        .atrasado { border-left-color: var(--danger); }
+        .pago { border-left-color: var(--success); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>GRUPO UNO - Hub</h1>
+            <span id="dataAtual"></span>
+        </div>
+        <div class="grid-cards">
+            <a href="index.html" class="card-menu"><strong>➕ Nova Cotação</strong><span>Cálculos e PDF</span></a>
+            <a href="operacional.html" class="card-menu"><strong>🚛 Operacional</strong><span id="countPendentes" class="stat-value">0 pendentes</span></a>
+            <a href="rastreio.html" class="card-menu atrasado"><strong>📍 Rastreio</strong><span id="countAtrasos" class="stat-value">0 alertas</span></a>
+            <a href="financeiro.html" class="card-menu pago"><strong>💰 Financeiro</strong><span id="countFinanceiro" class="stat-value">R$ 0,00</span></a>
+        </div>
+    </div>
+    <script>
+        window.onload = () => {
+            const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            const hist = JSON.parse(localStorage.getItem('uno_historico')) || [];
+            const hoje = new Date().toISOString().split('T')[0];
+            const pendentes = hist.filter(h => !oper.find(o => o.seq === h.seq)).length;
+            const atrasos = oper.filter(o => o.previsao < hoje && o.statusEntrega !== 'ENTREGUE').length;
+            const aReceber = oper.filter(o => o.faturado && !o.pago).reduce((s, i) => s + i.total, 0);
+            document.getElementById('countPendentes').innerText = `${pendentes} pendentes`;
+            document.getElementById('countAtrasos').innerText = `${atrasos} atrasos`;
+            document.getElementById('countFinanceiro').innerText = aReceber.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+            document.getElementById('dataAtual').innerText = new Date().toLocaleDateString('pt-BR');
+        };
+    </script>
+</body>
+</html>

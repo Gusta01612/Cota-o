@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Financeiro | Grupo UNO</title>
+    <style>
+        :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
+        
+        .filtros-financeiro { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        input, select { padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
+        input:focus { border-color: var(--p); }
+
+        .fatura-box { background: #eff6ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; border: 1px solid var(--p); }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .badge-pago { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; }
+        .btn-pago { background: #10b981; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-faturar { background: var(--p); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>💰 Faturamento em Lote</h2>
+        <div style="margin-bottom: 20px; display: flex; gap: 15px;">
+            <a href="index_hub.html" style="text-decoration: none; color: var(--p); font-weight: bold;">🏠 Início</a>
+            <button onclick="limparOperacional()" style="font-size: 11px; color: #94a3b8; background: none; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer; padding: 5px 10px;">Limpar Operacional</button>
+        </div>
+        
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+        <div class="filtros-financeiro">
+            <input type="text" id="filtroBusca" placeholder="🔍 Buscar Fatura, Nota ou Seq..." oninput="render()">
+            <select id="filtroStatus" onchange="render()">
+                <option value="TODOS">Todos os Status</option>
+                <option value="PENDENTE">Pendentes</option>
+                <option value="FATURADO">Faturados (Pagar)</option>
+                <option value="PAGO">Pagos</option>
+            </select>
+        </div>
+
+        <div id="faturaBox" class="fatura-box">
+            <input type="text" id="numFatura" placeholder="Nº da Fatura">
+            <button class="btn-faturar" onclick="faturar()">Confirmar Lote</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Sel.</th>
+                    <th>Seq</th>
+                    <th>Docs</th>
+                    <th>Valor</th>
+                    <th>Fatura</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="listaFin"></tbody>
+        </table>
+    </div>
+
+    <script>
+        function render() {
+            const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            const busca = document.getElementById('filtroBusca').value.toLowerCase();
+            const statusFiltro = document.getElementById('filtroStatus').value;
+
+            const filtrados = oper.filter(o => {
+                const matchBusca = 
+                    String(o.seq).toLowerCase().includes(busca) || 
+                    (o.documentos && o.documentos.toLowerCase().includes(busca)) ||
+                    (o.numeroFatura && o.numeroFatura.toLowerCase().includes(busca)) ||
+                    (o.praca && o.praca.toLowerCase().includes(busca));
+                
+                let matchStatus = true;
+                if (statusFiltro === 'PENDENTE') matchStatus = !o.faturado && !o.pago;
+                if (statusFiltro === 'FATURADO') matchStatus = o.faturado && !o.pago;
+                if (statusFiltro === 'PAGO') matchStatus = o.pago;
+
+                return matchBusca && matchStatus;
+            });
+
+            document.getElementById('listaFin').innerHTML = filtrados.map(o => {
+                // Previne erro se total não for número
+                const valorTotal = Number(o.total || 0).toFixed(2);
+                
+                return `
+                <tr>
+                    <td>${o.faturado || o.pago ? '---' : `<input type="checkbox" class="chk" data-seq="${o.seq}" onchange="toggleBox()">`}</td>
+                    <td><small>${o.seq}</small></td>
+                    <td><small>${o.documentos || '---'}</small></td>
+                    <td><strong>R$ ${valorTotal}</strong></td>
+                    <td>${o.numeroFatura || '--'}</td>
+                    <td>
+                        ${o.pago ? '<span class="badge-pago">PAGO</span>' : 
+                          o.faturado ? `<button class="btn-pago" onclick="pagarPorFatura('${o.numeroFatura}', '${o.seq}')">Baixar Fatura</button>` : 'Aguardando'}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function toggleBox() {
+            const qtd = document.querySelectorAll('.chk:checked').length;
+            document.getElementById('faturaBox').style.display = qtd > 0 ? 'block' : 'none';
+        }
+
+        function faturar() {
+            const num = document.getElementById('numFatura').value.trim();
+            if(!num) return alert("Digite o número da fatura!");
+            
+            let oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            const selecionados = Array.from(document.querySelectorAll('.chk:checked')).map(c => String(c.dataset.seq));
+
+            oper = oper.map(item => {
+                if (selecionados.includes(String(item.seq))) {
+                    return { ...item, faturado: true, numeroFatura: num };
+                }
+                return item;
+            });
+
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            document.getElementById('numFatura').value = "";
+            render(); 
+            toggleBox();
+        }
+
+        function pagarPorFatura(numFatura, seqUnico) {
+            let oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            
+            if (numFatura && numFatura !== 'undefined' && numFatura !== '--') {
+                if(!confirm(`Deseja baixar todos os itens da fatura ${numFatura}?`)) return;
+                
+                oper = oper.map(o => {
+                    if (String(o.numeroFatura) === String(numFatura)) {
+                        return { ...o, pago: true };
+                    }
+                    return o;
+                });
+            } else {
+                // Baixa individual para fretes avulsos sem fatura
+                if(!confirm(`Baixar este item individualmente?`)) return;
+                oper = oper.map(o => {
+                    if (String(o.seq) === String(seqUnico)) {
+                        return { ...o, pago: true };
+                    }
+                    return o;
+                });
+            }
+
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            render();
+        }
+
+        function limparOperacional() {
+            if(!confirm("Isso apagará todos os fretes efetivados e faturas. Continuar?")) return;
+            localStorage.removeItem('uno_operacional');
+            render();
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>

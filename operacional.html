@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Operacional | Grupo UNO</title>
+    <style>
+        :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; --danger: #dc2626; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 1000px; margin: auto; }
+        
+        /* Cabeçalho e Links */
+        .header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-link { text-decoration: none; color: var(--p); font-weight: bold; }
+        
+        /* Tabela */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 12px; text-align: left; }
+        input { padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        
+        /* Botões */
+        .btn-save { background: var(--p); color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-save:hover { background: #1e40af; }
+        .btn-danger { background: none; border: 1px solid #fca5a5; color: var(--danger); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .btn-danger:hover { background: #fee2e2; }
+
+        /* Container Avulso */
+        .avulso-container { margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header-actions">
+            <a href="index_hub.html" class="btn-link">← Voltar ao Início</a>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-danger" onclick="limparHistorico()">🧹 Limpar Pendentes</button>
+                <button class="btn-danger" onclick="limparOperacional()">⚠️ Zerar Operacional</button>
+            </div>
+        </div>
+
+        <div class="avulso-container">
+            <strong>➕ Inserir Serviço Avulso</strong><br><br>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+                <input type="text" id="avulsoPraca" placeholder="Praça de Destino">
+                <input type="number" id="avulsoValor" placeholder="Valor do Frete (R$)">
+                <input type="text" id="avulsoDocs" placeholder="Notas Fiscais / CT-e">
+                <input type="date" id="avulsoPrev" title="Previsão de Entrega">
+                <input type="text" id="avulsoMot" placeholder="Motorista / Placa" style="grid-column: span 2;">
+                <button class="btn-save" onclick="inserirAvulso()" style="background: #059669; grid-column: span 2; font-weight: bold;">
+                    Salvar e Lançar no Sistema
+                </button>
+            </div>
+        </div>
+
+        <h2>🚛 Efetivar Cotações</h2>
+        <table id="tabOper">
+            <thead>
+                <tr>
+                    <th>Seq</th>
+                    <th>Praça</th>
+                    <th>Docs (CT-e/NF)</th>
+                    <th>Previsão Entrega</th>
+                    <th>Motorista</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody id="listaPendentes"></tbody>
+        </table>
+    </div>
+
+    <script>
+        // --- FUNÇÕES DE LIMPEZA ---
+        
+        function limparHistorico() {
+            if(!confirm("Deseja apagar todas as cotações pendentes?")) return;
+            localStorage.removeItem('uno_historico');
+            render();
+        }
+
+        function limparOperacional() {
+            if(!confirm("⚠️ ATENÇÃO: Isso apagará todos os fretes já efetivados, faturas e o rastreio. Deseja continuar?")) return;
+            localStorage.removeItem('uno_operacional');
+            render();
+            alert("Operacional zerado!");
+        }
+
+        // --- FUNÇÕES OPERACIONAIS ---
+
+        function inserirAvulso() {
+            const praca = document.getElementById('avulsoPraca').value;
+            const valor = parseFloat(document.getElementById('avulsoValor').value);
+            const docs = document.getElementById('avulsoDocs').value;
+            const prev = document.getElementById('avulsoPrev').value;
+            const mot = document.getElementById('avulsoMot').value;
+            
+            if(!praca || !valor || !prev) return alert("Preencha Praça, Valor e Previsão!");
+
+            const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            
+            const novoFrete = {
+                seq: "AV-" + Math.floor(Math.random() * 1000),
+                praca: praca,
+                total: valor,
+                documentos: docs,
+                previsao: prev,
+                motorista: mot,
+                statusEntrega: 'EM_ROTA',
+                statusAtual: 'Coleta', // Inicia no primeiro status do seu rastreio
+                faturado: false,
+                pago: false
+            };
+
+            oper.push(novoFrete);
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            alert("Serviço avulso adicionado!");
+            
+            // Limpa os campos após salvar
+            document.getElementById('avulsoPraca').value = "";
+            document.getElementById('avulsoValor').value = "";
+            document.getElementById('avulsoDocs').value = "";
+            document.getElementById('avulsoMot').value = "";
+            
+            render(); 
+        }
+
+        function render() {
+            const hist = JSON.parse(localStorage.getItem('uno_historico')) || [];
+            const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            
+            // Filtra cotações que ainda não estão no operacional
+            const pendentes = hist.filter(h => !oper.find(o => String(o.seq) === String(h.seq)));
+            
+            const tbody = document.getElementById('listaPendentes');
+            if (pendentes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">Nenhuma cotação pendente.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = pendentes.map((h, i) => `
+                <tr>
+                    <td>${h.seq}</td>
+                    <td>${h.praca}</td>
+                    <td><input type="text" id="docs-${i}" placeholder="NF 123..."></td>
+                    <td><input type="date" id="prev-${i}"></td>
+                    <td><input type="text" id="mot-${i}" placeholder="Nome/Placa"></td>
+                    <td><button class="btn-save" onclick="efetivar(${i}, ${h.seq})">Efetivar</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function efetivar(idx, seq) {
+            const hist = JSON.parse(localStorage.getItem('uno_historico')) || [];
+            const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+            const item = hist.find(h => h.seq === seq);
+            
+            const previsao = document.getElementById(`prev-${idx}`).value;
+            const documentos = document.getElementById(`docs-${idx}`).value;
+            const motorista = document.getElementById(`mot-${idx}`).value;
+
+            if(!previsao) return alert("Defina a previsão de entrega!");
+
+            oper.push({
+                ...item,
+                documentos: documentos,
+                previsao: previsao,
+                motorista: motorista,
+                statusEntrega: 'EM_ROTA',
+                statusAtual: 'Coleta',
+                faturado: false,
+                pago: false
+            });
+
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            alert("Frete efetivado e enviado para o rastreio!"); 
+            render();
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>

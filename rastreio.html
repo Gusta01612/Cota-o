@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Fluxo | Grupo UNO</title>
+    <style>
+        :root { --p: #1d4ed8; --bg: #f8fafc; --border: #e2e8f0; --success: #10b981; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); padding: 20px; color: #1e293b; }
+        
+        .header-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+        .nav-top { display: flex; justify-content: space-between; align-items: center; }
+
+        /* Estilo da Barra de Filtros */
+        .filter-bar { 
+            display: grid; 
+            grid-template-columns: 2fr 1fr; 
+            gap: 10px; 
+            background: white; 
+            padding: 15px; 
+            border-radius: 10px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .filter-bar input, .filter-bar select { 
+            padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;
+        }
+
+        /* Cards de Status */
+        .status-card { 
+            background: white; padding: 15px; border-radius: 12px; margin-bottom: 15px; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); border: 1px solid var(--border);
+            transition: 0.3s;
+        }
+        .header-card { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        
+        .status-select {
+            padding: 8px; border-radius: 6px; border: 1px solid var(--p);
+            background: #eff6ff; color: var(--p); font-weight: bold; cursor: pointer;
+        }
+
+        /* Cores laterais */
+        .status-coleta { border-left: 8px solid #94a3b8; }
+        .status-coletado { border-left: 8px solid #f59e0b; }
+        .status-embarcado { border-left: 8px solid #3b82f6; }
+        .status-rota { border-left: 8px solid #8b5cf6; }
+        .status-entregue { border-left: 8px solid var(--success); background: #f0fdf4; }
+
+        .drive-box {
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .btn-drive {
+            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 12px;
+            border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+        }
+        .btn-drive.active { background: var(--success); color: white; border-color: var(--success); }
+
+        small { display: block; line-height: 1.4; color: #64748b; }
+        strong { font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="nav-top">
+            <h2 style="color: var(--p); margin: 0;">📍 Acompanhamento de Fluxo</h2>
+            <a href="index_hub.html" style="text-decoration:none; font-weight:bold; color: var(--p);">🏠 Início</a>
+        </div>
+
+        <div class="filter-bar">
+            <input type="text" id="buscaNota" placeholder="🔍 Buscar por Nota Fiscal ou Praça..." oninput="renderFluxo()">
+            <select id="filtroStatus" onchange="renderFluxo()">
+                <option value="TODOS">📋 Todos os Status</option>
+                <option value="Coleta">⏳ Aguardando Coleta</option>
+                <option value="Coletado">📦 Coletado</option>
+                <option value="Embarcado">🚛 Embarcado</option>
+                <option value="Rota">🛣️ Rota de Entrega</option>
+                <option value="Entregue">🏁 Entregue</option>
+            </select>
+        </div>
+    </div>
+
+    <div id="listaFluxo"></div>
+
+    <script>
+    function renderFluxo() {
+        const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+        const busca = document.getElementById('buscaNota').value.toLowerCase();
+        const filtro = document.getElementById('filtroStatus').value;
+        
+        // Aplica os filtros
+        const listaFiltrada = oper.filter(o => {
+            const statusMatch = (filtro === 'TODOS' || (o.statusAtual || 'Coleta') === filtro);
+            const buscaMatch = (
+                o.praca.toLowerCase().includes(busca) || 
+                (o.documentos && o.documentos.toLowerCase().includes(busca)) ||
+                String(o.seq).includes(busca)
+            );
+            return statusMatch && buscaMatch;
+        });
+
+        const html = listaFiltrada.map(o => {
+            const statusKey = (o.statusAtual || 'Coleta');
+            const statusClass = 'status-' + statusKey.toLowerCase().replace(' ', '-');
+            const isNoDrive = o.lancadoNoDrive === true;
+            
+            return `
+                <div class="status-card ${statusClass}">
+                    <div class="header-card">
+                        <div>
+                            <strong>${o.praca}</strong> <small>ID: ${o.seq}</small>
+                            <small style="margin-top:5px;">📄 Docs: ${o.documentos || '---'}</small>
+                            <small>📅 Prev: ${o.previsao ? new Date(o.previsao + 'T00:00:00').toLocaleDateString('pt-BR') : '---'}</small>
+                        </div>
+                        
+                        <select class="status-select" onchange="atualizarStatus('${o.seq}', this.value)">
+                            <option value="Coleta" ${statusKey === 'Coleta' ? 'selected' : ''}>Aguardando Coleta</option>
+                            <option value="Coletado" ${statusKey === 'Coletado' ? 'selected' : ''}>Coletado</option>
+                            <option value="Embarcado" ${statusKey === 'Embarcado' ? 'selected' : ''}>Embarcado</option>
+                            <option value="Rota" ${statusKey === 'Rota' ? 'selected' : ''}>Rota de Entrega</option>
+                            <option value="Entregue" ${statusKey === 'Entregue' ? 'selected' : ''}>Entregue</option>
+                        </select>
+                    </div>
+
+                    <div class="drive-box">
+                        <span style="font-size: 13px; color: #64748b;">Comprovante / Drive:</span>
+                        <button class="btn-drive ${isNoDrive ? 'active' : ''}" onclick="toggleDrive('${o.seq}')">
+                            ${isNoDrive ? '✅ Lançado' : '📁 Marcar Lançado'}
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).reverse().join('');
+
+        document.getElementById('listaFluxo').innerHTML = html || '<p style="text-align:center; color:#64748b; margin-top:20px;">Nenhum registro encontrado para essa busca.</p>';
+    }
+
+    function atualizarStatus(seq, novoStatus) {
+        const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+        const item = oper.find(o => String(o.seq) === String(seq));
+        if (item) {
+            item.statusAtual = novoStatus;
+            item.statusEntrega = (novoStatus === 'Entregue') ? 'ENTREGUE' : 'EM_ROTA';
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            renderFluxo();
+        }
+    }
+
+    function toggleDrive(seq) {
+        const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
+        const item = oper.find(o => String(o.seq) === String(seq));
+        if (item) {
+            item.lancadoNoDrive = !item.lancadoNoDrive;
+            localStorage.setItem('uno_operacional', JSON.stringify(oper));
+            renderFluxo();
+        }
+    }
+
+    window.onload = renderFluxo;
+    </script>
+</body>
+</html>
