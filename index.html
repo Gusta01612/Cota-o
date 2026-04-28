@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cotação de Frete | Grupo UNO</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="UnoCota">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; }
@@ -29,7 +32,15 @@
             box-sizing: border-box;
         }
 
-        h2 { text-align: center; color: var(--p); margin-bottom: 20px; font-weight: 800; }
+        .header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        h2 { color: var(--p); margin: 0; font-weight: 800; font-size: 20px; }
+        .hist-link { font-size: 13px; font-weight: 700; color: var(--p); text-decoration: none; }
+        .hist-link:hover { text-decoration: underline; }
 
         /* Grid Inteligente: 1 coluna no celular, 2 no PC */
         .grid { 
@@ -50,9 +61,25 @@
         select, input { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; background: #fff; }
         select:focus, input:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
-        .btn-calc { width: 100%; background: var(--p); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; }
+        /* Toggle cubado */
+        .cubado-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .cubado-toggle label { margin: 0; font-size: 13px; font-weight: 700; color: #64748b; text-transform: none; cursor: pointer; }
+        .toggle-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; inset: 0; background: #e2e8f0; border-radius: 22px; cursor: pointer; transition: 0.2s; }
+        .toggle-slider:before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+        .toggle-switch input:checked + .toggle-slider { background: var(--p); }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+        .dim-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+        .section-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
+
+        .btn-calc { width: 100%; background: var(--p); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; transition: 0.15s; }
+        .btn-calc:hover { background: #1e40af; }
         
-        .btn-pdf { width: 100%; background: #10b981; color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; display: none; }
+        .btn-pdf { width: 100%; background: #10b981; color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; display: none; transition: 0.15s; }
+        .btn-pdf:hover { background: #059669; }
 
         #res { margin-top: 25px; padding: 20px; background: #f1f5f9; border-radius: 10px; display: none; }
         
@@ -61,6 +88,8 @@
         .res-trans { background: #dbeafe; color: var(--p); font-weight: 800; padding: 12px; margin: 10px 0; border-radius: 6px; border: none; }
         
         .total { border: none; font-size: 24px; font-weight: 900; color: #0f172a; padding-top: 15px; margin-top: 5px; border-top: 2px solid #cbd5e1; }
+
+        .badge-cubado-info { display: inline-block; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; border-radius: 4px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
 
         /* Ajuste para telas muito pequenas */
         @media (max-width: 380px) {
@@ -72,7 +101,10 @@
 <body>
 
 <div class="card">
-    <h2>COTAÇÃO UNO</h2>
+    <div class="header-row">
+        <h2>COTAÇÃO UNO</h2>
+        <a class="hist-link" href="historico.html">📋 Histórico</a>
+    </div>
     
     <div class="grid">
         <div class="full">
@@ -90,17 +122,38 @@
                 <option value="UNO">TABELA RISSO(UNO)</option>
             </select>
         </div>
-        <div><label>Peso Real (Kg)</label><input type="number" id="peso" placeholder="0"></div>
-        <div><label>Valor da NF (R$)</label><input type="number" id="vnf" placeholder="0.00"></div>
-        <div><label>Taxa Coleta (R$)</label><input type="number" id="coleta" value="0"></div>
-        <div><label>Taxa Entrega (R$)</label><input type="number" id="entrega" value="0"></div>
+        <div><label>Peso Real (Kg)</label><input type="number" id="peso" placeholder="0" min="0" step="0.1"></div>
+        <div><label>Valor da NF (R$)</label><input type="number" id="vnf" placeholder="0.00" min="0" step="0.01"></div>
+        <div><label>Taxa Coleta (R$)</label><input type="number" id="coleta" value="0" min="0" step="0.01"></div>
+        <div><label>Taxa Entrega (R$)</label><input type="number" id="entrega" value="0" min="0" step="0.01"></div>
+    </div>
+
+    <!-- Peso Cubado -->
+    <div style="margin-bottom: 20px;">
+        <div class="section-label">Peso Cubado (opcional)</div>
+        <div class="cubado-toggle">
+            <label class="toggle-switch">
+                <input type="checkbox" id="toggleCubado" onchange="toggleDimensoes()">
+                <span class="toggle-slider"></span>
+            </label>
+            <label for="toggleCubado">Calcular pelo peso cubado (A × L × C × 300)</label>
+        </div>
+        <div id="dimWrap" style="display:none;">
+            <div class="dim-grid">
+                <div><label>Altura (m)</label><input type="number" id="alt" placeholder="0.00" min="0" step="0.01"></div>
+                <div><label>Largura (m)</label><input type="number" id="lar" placeholder="0.00" min="0" step="0.01"></div>
+                <div><label>Comprimento (m)</label><input type="number" id="comp" placeholder="0.00" min="0" step="0.01"></div>
+            </div>
+            <div id="pesoCubadoInfo" style="font-size:12px; color:#64748b; margin-top:6px;"></div>
+        </div>
     </div>
 
     <button class="btn-calc" onclick="calcular()">CALCULAR AGORA</button>
     <button id="btnPdf" class="btn-pdf" onclick="gerarPDF()">BAIXAR COTAÇÃO PDF</button>
 
     <div id="res">
-        <div class="line"><span>Nº Cotação:</span><strong id="rSeq">000</strong></div>
+        <div class="line"><span>Nº Cotação:</span><strong id="rSeq">001</strong></div>
+        <div class="line"><span>Peso Tarifado:</span><strong id="rPesoTar"></strong></div>
         <div class="line"><span>Valor Base (Saída 10kg):</span><strong id="rBase"></strong></div>
         <div class="line"><span>Valor Excedente:</span><strong id="rExc"></strong></div>
         <div class="line"><span>GRIS:</span><strong id="rGris"></strong></div>
@@ -113,43 +166,134 @@
 
 <script src="tabelas.js"></script>
 <script>
+    const HIST_KEY = 'uno_historico';
+
+    function getHistorico() {
+        try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; }
+    }
+    function setHistorico(h) { localStorage.setItem(HIST_KEY, JSON.stringify(h)); }
+
+    function getSeq() {
+        return parseInt(localStorage.getItem('cont_cotacao') || '1');
+    }
+
     function init() {
         const sel = document.getElementById('praca');
         const pracas = [...new Set(DATA_TABELAS.map(t => t.praca))].sort();
         pracas.forEach(p => sel.add(new Option(p, p)));
 
         // Mostra o número atual ao carregar
-        const atual = localStorage.getItem('cont_cotacao') || 1;
-        document.getElementById('rSeq').innerText = atual.toString().padStart(3, '0');
+        document.getElementById('rSeq').innerText = getSeq().toString().padStart(3, '0');
+
+        // Preencher via URLSearchParams (vindo do recotar)
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('praca')) {
+            sel.value = params.get('praca');
+        }
+        if (params.has('tipo')) {
+            document.getElementById('tipo').value = params.get('tipo');
+        }
+        if (params.has('peso')) {
+            document.getElementById('peso').value = params.get('peso');
+        }
+        if (params.has('vnf')) {
+            document.getElementById('vnf').value = params.get('vnf');
+        }
+        if (params.has('coleta')) {
+            document.getElementById('coleta').value = params.get('coleta');
+        }
+        if (params.has('entrega')) {
+            document.getElementById('entrega').value = params.get('entrega');
+        }
+
+        const alt = params.get('alt') || '0';
+        const lar = params.get('lar') || '0';
+        const comp = params.get('comp') || '0';
+        if (parseFloat(alt) > 0 && parseFloat(lar) > 0 && parseFloat(comp) > 0) {
+            document.getElementById('toggleCubado').checked = true;
+            document.getElementById('dimWrap').style.display = 'block';
+            document.getElementById('alt').value = alt;
+            document.getElementById('lar').value = lar;
+            document.getElementById('comp').value = comp;
+            atualizarPesoCubado();
+        }
     }
 
+    function toggleDimensoes() {
+        const ativo = document.getElementById('toggleCubado').checked;
+        document.getElementById('dimWrap').style.display = ativo ? 'block' : 'none';
+        if (!ativo) {
+            document.getElementById('alt').value = '';
+            document.getElementById('lar').value = '';
+            document.getElementById('comp').value = '';
+            document.getElementById('pesoCubadoInfo').textContent = '';
+        }
+    }
+
+    function atualizarPesoCubado() {
+        const alt = parseFloat(document.getElementById('alt').value) || 0;
+        const lar = parseFloat(document.getElementById('lar').value) || 0;
+        const comp = parseFloat(document.getElementById('comp').value) || 0;
+        const info = document.getElementById('pesoCubadoInfo');
+        if (alt > 0 && lar > 0 && comp > 0) {
+            const pc = alt * lar * comp * 300;
+            info.textContent = `Peso cubado: ${pc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg`;
+        } else {
+            info.textContent = '';
+        }
+    }
+
+    // Atualiza info ao digitar dimensões
+    ['alt','lar','comp'].forEach(id => {
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById(id)?.addEventListener('input', atualizarPesoCubado);
+        });
+    });
+
     function fmt(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+    function fmtKg(v) { return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg'; }
+
+    // Resultado atual para salvar no histórico
+    let _ultimoResultado = null;
 
     function calcular() {
         const p = document.getElementById('praca').value;
         const tType = document.getElementById('tipo').value;
-        const peso = parseFloat(document.getElementById('peso').value) || 0;
+        const pesoReal = parseFloat(document.getElementById('peso').value) || 0;
         const vnf = parseFloat(document.getElementById('vnf').value) || 0;
         const col = parseFloat(document.getElementById('coleta').value) || 0;
         const ent = parseFloat(document.getElementById('entrega').value) || 0;
 
-        if (peso <= 0 || vnf <= 0) return alert("Informe Peso e Valor NF.");
+        if (pesoReal <= 0 || vnf <= 0) return alert("Informe Peso e Valor NF.");
 
         const d = DATA_TABELAS.find(x => x.praca === p && x.tipo === tType);
-        if (!d) return alert("Dados não encontrados.");
+        if (!d) return alert("Dados não encontrados para esta praça/tabela.");
+
+        // Peso cubado
+        const usaCubado = document.getElementById('toggleCubado').checked;
+        const alt  = parseFloat(document.getElementById('alt').value)  || 0;
+        const lar  = parseFloat(document.getElementById('lar').value)   || 0;
+        const comp = parseFloat(document.getElementById('comp').value)  || 0;
+        const pesoCubado = (usaCubado && alt > 0 && lar > 0 && comp > 0) ? alt * lar * comp * 300 : 0;
+        const pesoTarifado = usaCubado && pesoCubado > pesoReal ? pesoCubado : pesoReal;
 
         const vBaseFixo = d.vBase;
-        const pesoExcedente = Math.max(0, peso - 10);
+        const pesoExcedente = Math.max(0, pesoTarifado - 10);
         const valorExcedente = pesoExcedente * d.vKg;
         const fretePesoTotal = vBaseFixo + valorExcedente;
 
         const gris = Math.max(d.grisM, vnf * d.grisP);
         const adv = vnf * d.adv;
-        const ped = Math.ceil(peso / d.pedF) * d.pedV;
+        const ped = Math.ceil(pesoTarifado / d.pedF) * d.pedV;
         
         const transferencia = fretePesoTotal + gris + adv + ped;
         const total = transferencia + col + ent;
 
+        // Número de cotação atual
+        const seq = getSeq();
+
+        document.getElementById('rSeq').innerText = seq.toString().padStart(3, '0');
+        document.getElementById('rPesoTar').innerText = fmtKg(pesoTarifado) + (usaCubado && pesoCubado > pesoReal ? ' (cubado)' : ' (real)');
         document.getElementById('rBase').innerText = fmt(vBaseFixo);
         document.getElementById('rExc').innerText = fmt(valorExcedente);
         document.getElementById('rGris').innerText = fmt(gris);
@@ -160,7 +304,37 @@
         
         document.getElementById('res').style.display = 'block';
         document.getElementById('btnPdf').style.display = 'block';
+
+        // Salvar no histórico
+        const agora = new Date();
+        const dataFmt = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+
+        const entrada = {
+            seq,
+            praca: p,
+            tipo: tType,
+            pesoReal,
+            pesoCubado,
+            usaCubado: usaCubado && pesoCubado > pesoReal,
+            pesoTarifado,
+            alt, lar, comp,
+            vnf, col, ent,
+            base: vBaseFixo,
+            exc: valorExcedente,
+            gris,
+            adv,
+            ped,
+            transferencia,
+            total,
+            data: dataFmt
+        };
+        _ultimoResultado = entrada;
+
+        const hist = getHistorico();
+        hist.unshift(entrada); // mais recente primeiro
+        setHistorico(hist);
     }
+
     window.onload = init;
 </script>
 </body>
