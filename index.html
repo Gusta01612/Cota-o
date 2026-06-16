@@ -178,7 +178,7 @@
                 <input type="checkbox" id="toggleCubado" onchange="toggleDimensoes()">
                 <span class="toggle-slider"></span>
             </label>
-            <label for="toggleCubado">Calcular pelo peso cubado (Alt × Lar × Comp × Qtd × 300)</label>
+            <label for="toggleCubado">Calcular pelo peso cubado (Alt × Lar × Comp × Qtd × 167)</label>
         </div>
         
         <div id="dimWrap" style="display:none;">
@@ -308,7 +308,7 @@
             const qtd = parseInt(linha.querySelector('.qtd').value) || 0;
 
             if (alt > 0 && lar > 0 && comp > 0 && qtd > 0) {
-                pesoCubadoTotal += (alt * lar * comp * qtd * 300);
+                pesoCubadoTotal += (alt * lar * comp * qtd * 167);
             }
         });
         return pesoCubadoTotal;
