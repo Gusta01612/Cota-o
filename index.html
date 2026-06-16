@@ -69,7 +69,7 @@
         .toggle-switch input:checked + .toggle-slider { background: var(--p); }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
 
-        /* Novo layout para múltiplos itens */
+        /* Layout para múltiplos itens */
         .item-row { 
             display: grid; 
             grid-template-columns: repeat(4, 1fr) auto; 
@@ -110,22 +110,17 @@
         .btn-rem-item:hover { background: #dc2626; }
 
         .section-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
-
-        .btn-calc { width: 100%; background: var(--p); color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; transition: 0.15s; }
-        .btn-calc:hover { background: #1e40af; }
         
-        .btn-pdf { width: 100%; background: #10b981; color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 10px; cursor: pointer; font-size: 16px; display: none; transition: 0.15s; }
+        .btn-pdf { width: 100%; background: #10b981; color: white; padding: 16px; border: none; border-radius: 8px; font-weight: bold; margin-top: 15px; cursor: pointer; font-size: 16px; display: none; transition: 0.15s; }
         .btn-pdf:hover { background: #059669; }
 
-        #res { margin-top: 25px; padding: 20px; background: #f1f5f9; border-radius: 10px; display: none; }
+        #res { margin-top: 25px; padding: 20px; background: #f1f5f9; border-radius: 10px; display: block; }
         
         .line { display: flex; justify-content: space-between; padding: 10px 0; font-size: 14px; border-bottom: 1px dashed #cbd5e1; }
         
         .res-trans { background: #dbeafe; color: var(--p); font-weight: 800; padding: 12px; margin: 10px 0; border-radius: 6px; border: none; }
         
         .total { border: none; font-size: 24px; font-weight: 900; color: #0f172a; padding-top: 15px; margin-top: 5px; border-top: 2px solid #cbd5e1; }
-
-        .badge-cubado-info { display: inline-block; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; border-radius: 4px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
 
         @media (max-width: 380px) {
             .total { font-size: 20px; }
@@ -149,7 +144,7 @@
         </a>
     </div>
 
-    <div class="grid">
+    <div class="grid" id="form-principal">
         <div class="full">
             <label>Praça de Destino</label>
             <select id="praca"></select>
@@ -175,7 +170,7 @@
         <div class="section-label">Peso Cubado Multi-Itens (opcional)</div>
         <div class="cubado-toggle">
             <label class="toggle-switch">
-                <input type="checkbox" id="toggleCubado" onchange="toggleDimensoes()">
+                <input type="checkbox" id="toggleCubado">
                 <span class="toggle-slider"></span>
             </label>
             <label for="toggleCubado">Calcular pelo peso cubado (Alt × Lar × Comp × Qtd × 167)</label>
@@ -186,36 +181,39 @@
             
             <div id="container-itens">
                 <div class="item-row">
-                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1"></div>
                     <div><button type="button" class="btn-rem-item" style="visibility: hidden;">X</button></div>
                 </div>
             </div>
-            <div id="pesoCubadoInfo" style="font-size:12px; color:#64748b; margin-top:10px; font-weight: bold;"></div>
+            <div id="cubagemInfo" style="font-size:12px; color:#64748b; margin-top:10px; font-weight: bold; line-height: 1.6;"></div>
         </div>
     </div>
 
-    <button class="btn-calc" onclick="calcular()">CALCULAR AGORA</button>
     <button id="btnPdf" class="btn-pdf" onclick="gerarPDF()">BAIXAR COTAÇÃO PDF</button>
 
     <div id="res">
         <div class="line"><span>Nº Cotação:</span><strong id="rSeq">001</strong></div>
-        <div class="line"><span>Peso Tarifado:</span><strong id="rPesoTar"></strong></div>
-        <div class="line"><span>Valor Base (Saída 10kg):</span><strong id="rBase"></strong></div>
-        <div class="line"><span>Valor Excedente:</span><strong id="rExc"></strong></div>
-        <div class="line"><span>GRIS:</span><strong id="rGris"></strong></div>
-        <div class="line"><span>Ad Valorem:</span><strong id="rAdv"></strong></div>
-        <div class="line"><span>Pedágio:</span><strong id="rPed"></strong></div>
-        <div class="line res-trans"><span>Transferência Total:</span><strong id="rTrans"></strong></div>
-        <div class="line total"><span>TOTAL GERAL:</span><span id="rTotal"></span></div>
+        <div class="line"><span>Metro Quadrado / Cúbico (m³):</span><strong id="rMetroCubico">0.000 m³</strong></div>
+        <div class="line"><span>Peso Cubado Calculado:</span><strong id="rPesoCubadoFinal">0.00 kg</strong></div>
+        <div class="line"><span>Peso Tarifado (Utilizado):</span><strong id="rPesoTar">0.00 kg (real)</strong></div>
+        <div class="line"><span>Valor Base (Saída 10kg):</span><strong id="rBase">R$ 0,00</strong></div>
+        <div class="line"><span>Valor Excedente:</span><strong id="rExc">R$ 0,00</strong></div>
+        <div class="line"><span>GRIS:</span><strong id="rGris">R$ 0,00</strong></div>
+        <div class="line"><span>Ad Valorem:</span><strong id="rAdv">R$ 0,00</strong></div>
+        <div class="line"><span>Pedágio:</span><strong id="rPed">R$ 0,00</strong></div>
+        <div class="line res-trans"><span>Transferência Total:</span><strong id="rTrans">R$ 0,00</strong></div>
+        <div class="line total"><span>TOTAL GERAL:</span><span id="rTotal">R$ 0,00</span></div>
     </div>
 </div>
 
 <script src="tabelas.js"></script>
 <script>
     const HIST_KEY = 'uno_historico';
+    const FATOR_CUBAGEM = 167;
+    let _ultimoResultado = null;
 
     function getHistorico() {
         try { return JSON.parse(localStorage.getItem(HIST_KEY)) || []; } catch { return []; }
@@ -241,7 +239,6 @@
         if (params.has('coleta')) document.getElementById('coleta').value = params.get('coleta');
         if (params.has('entrega')) document.getElementById('entrega').value = params.get('entrega');
 
-        // Adaptação caso venha dados antigos via URL
         const alt = params.get('alt') || '0';
         const lar = params.get('lar') || '0';
         const comp = params.get('comp') || '0';
@@ -252,54 +249,65 @@
             primeiraLinha.querySelector('.alt').value = alt;
             primeiraLinha.querySelector('.lar').value = lar;
             primeiraLinha.querySelector('.comp').value = comp;
-            atualizarPesoCubado();
         }
+
+        // Ativa os ouvintes globais para cálculo em tempo real
+        configurarOuvintesTempoReal();
+        calcular(); // Executa o cálculo inicial
+    }
+
+    function configurarOuvintesTempoReal() {
+        // Monitora qualquer mudança nos inputs de texto, números ou selects do card
+        const card = document.querySelector('.card');
+        card.addEventListener('input', calcular);
+        card.addEventListener('change', calcular);
+
+        // Ouvinte específico para abrir/fechar as dimensões da cubagem
+        document.getElementById('toggleCubado').addEventListener('change', toggleDimensoes);
     }
 
     function toggleDimensoes() {
         const ativo = document.getElementById('toggleCubado').checked;
         document.getElementById('dimWrap').style.display = ativo ? 'block' : 'none';
         if (!ativo) {
-            // Limpa as linhas extras e reseta a primeira
             const container = document.getElementById('container-itens');
             container.innerHTML = `
                 <div class="item-row">
-                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01"></div>
+                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1"></div>
                     <div><button type="button" class="btn-rem-item" style="visibility: hidden;">X</button></div>
                 </div>
             `;
-            document.getElementById('pesoCubadoInfo').textContent = '';
+            document.getElementById('cubagemInfo').textContent = '';
         }
+        calcular();
     }
 
-    // Função para Adicionar Nova Linha Dinamicamente
     function adicionarLinhaItem() {
         const container = document.getElementById('container-itens');
         const novaLinha = document.createElement('div');
         novaLinha.className = 'item-row';
         novaLinha.innerHTML = `
-            <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-            <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-            <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
-            <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+            <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01"></div>
+            <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01"></div>
+            <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01"></div>
+            <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1"></div>
             <div><button type="button" class="btn-rem-item" onclick="removerLinhaItem(this)">X</button></div>
         `;
         container.appendChild(novaLinha);
+        calcular();
     }
 
-    // Função para Remover Linha Dinamicamente
     function removerLinhaItem(botao) {
         botao.closest('.item-row').remove();
-        atualizarPesoCubado();
+        calcular();
     }
 
-    // Calcula o somatório da cubagem de todas as linhas informadas
-    function obterPesoCubadoTotal() {
+    function calcularDadosCubagem() {
         const linhas = document.querySelectorAll('.item-row');
-        let pesoCubadoTotal = 0;
+        let m3Total = 0;
 
         linhas.forEach(linha => {
             const alt = parseFloat(linha.querySelector('.alt').value) || 0;
@@ -308,18 +316,23 @@
             const qtd = parseInt(linha.querySelector('.qtd').value) || 0;
 
             if (alt > 0 && lar > 0 && comp > 0 && qtd > 0) {
-                pesoCubadoTotal += (alt * lar * comp * qtd * 167);
+                m3Total += (alt * lar * comp * qtd);
             }
         });
-        return pesoCubadoTotal;
+
+        return {
+            metrosCubicos: m3Total,
+            pesoCubado: m3Total * FATOR_CUBAGEM
+        };
     }
 
-    function atualizarPesoCubado() {
-        const info = document.getElementById('pesoCubadoInfo');
-        const pc = obterPesoCubadoTotal();
-        
-        if (pc > 0) {
-            info.textContent = `Peso cubado total: ${pc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg`;
+    function atualizarInfoCubagem(dados) {
+        const info = document.getElementById('cubagemInfo');
+        if (dados.metrosCubicos > 0) {
+            info.innerHTML = `
+                Volume Total: ${dados.metrosCubicos.toFixed(3)} m³<br>
+                Peso Cubado Total: ${dados.pesoCubado.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg
+            `;
         } else {
             info.textContent = '';
         }
@@ -328,7 +341,20 @@
     function fmt(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
     function fmtKg(v) { return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg'; }
 
-    let _ultimoResultado = null;
+    // Reseta visualmente a tabela para valores zerados caso falte preenchimento básico
+    function zerarResultados() {
+        document.getElementById('rMetroCubico').innerText = "0.000 m³";
+        document.getElementById('rPesoCubadoFinal').innerText = "0.00 kg";
+        document.getElementById('rPesoTar').innerText = "0.00 kg (real)";
+        document.getElementById('rBase').innerText = fmt(0);
+        document.getElementById('rExc').innerText = fmt(0);
+        document.getElementById('rGris').innerText = fmt(0);
+        document.getElementById('rAdv').innerText = fmt(0);
+        document.getElementById('rPed').innerText = fmt(0);
+        document.getElementById('rTrans').innerText = fmt(0);
+        document.getElementById('rTotal').innerText = fmt(0);
+        document.getElementById('btnPdf').style.display = 'none';
+    }
 
     function calcular() {
         const p = document.getElementById('praca').value;
@@ -338,14 +364,25 @@
         const col = parseFloat(document.getElementById('coleta').value) || 0;
         const ent = parseFloat(document.getElementById('entrega').value) || 0;
 
-        if (pesoReal <= 0 || vnf <= 0) return alert("Informe Peso e Valor NF.");
+        // Executa a cubagem paralela de qualquer forma para atualizar a info cinza
+        const usaCubado = document.getElementById('toggleCubado').checked;
+        const dadosCubagem = calcularDadosCubagem();
+        atualizarInfoCubagem(dadosCubagem);
+
+        // Se dados obrigatórios não estiverem na tela, apenas zera o resultado sem travar com 'alert'
+        if (pesoReal <= 0 || vnf <= 0) {
+            zerarResultados();
+            return;
+        }
 
         const d = DATA_TABELAS.find(x => x.praca === p && x.tipo === tType);
-        if (!d) return alert("Dados não encontrados para esta praça/tabela.");
-
-        // Processamento Multi-Itens
-        const usaCubado = document.getElementById('toggleCubado').checked;
-        const pesoCubado = usaCubado ? obterPesoCubadoTotal() : 0;
+        if (!d) {
+            zerarResultados();
+            return;
+        }
+        
+        const m3Final = usaCubado ? dadosCubagem.metrosCubicos : 0;
+        const pesoCubado = usaCubado ? dadosCubagem.pesoCubado : 0;
         const pesoTarifado = usaCubado && pesoCubado > pesoReal ? pesoCubado : pesoReal;
 
         const vBaseFixo = d.vBase;
@@ -363,6 +400,8 @@
         const seq = getSeq();
 
         document.getElementById('rSeq').innerText = seq.toString().padStart(3, '0');
+        document.getElementById('rMetroCubico').innerText = m3Final.toFixed(3) + " m³";
+        document.getElementById('rPesoCubadoFinal').innerText = fmtKg(pesoCubado);
         document.getElementById('rPesoTar').innerText = fmtKg(pesoTarifado) + (usaCubado && pesoCubado > pesoReal ? ' (cubado)' : ' (real)');
         document.getElementById('rBase').innerText = fmt(vBaseFixo);
         document.getElementById('rExc').innerText = fmt(valorExcedente);
@@ -372,7 +411,6 @@
         document.getElementById('rTrans').innerText = fmt(transferencia);
         document.getElementById('rTotal').innerText = fmt(total);
         
-        document.getElementById('res').style.display = 'block';
         document.getElementById('btnPdf').style.display = 'block';
 
         const agora = new Date();
@@ -383,6 +421,7 @@
             praca: p,
             tipo: tType,
             pesoReal,
+            metrosCubicos: m3Final,
             pesoCubado,
             usaCubado: usaCubado && pesoCubado > pesoReal,
             pesoTarifado,
@@ -396,11 +435,14 @@
             total,
             data: dataFmt
         };
-        _ultimoResultado = entrada;
-
-        const hist = getHistorico();
-        hist.unshift(entrada);
-        setHistorico(hist);
+        
+        // Só salva e atualiza o histórico em memória se houver uma alteração ativa válida
+        if (JSON.stringify(_ultimoResultado) !== JSON.stringify(entrada)) {
+            _ultimoResultado = entrada;
+            const hist = getHistorico();
+            hist.unshift(entrada);
+            setHistorico(hist);
+        }
     }
 
     window.onload = init;
