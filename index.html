@@ -42,7 +42,6 @@
         .hist-link { font-size: 13px; font-weight: 700; color: var(--p); text-decoration: none; }
         .hist-link:hover { text-decoration: underline; }
 
-        /* Grid Inteligente: 1 coluna no celular, 2 no PC */
         .grid { 
             display: grid; 
             grid-template-columns: 1fr; 
@@ -57,12 +56,11 @@
 
         label { display: block; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
         
-        /* Font-size 16px evita que o iPhone dê zoom automático ao clicar no campo */
         select, input { width: 100%; padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 16px; outline: none; box-sizing: border-box; background: #fff; }
         select:focus, input:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 
         /* Toggle cubado */
-        .cubado-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .cubado-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .cubado-toggle label { margin: 0; font-size: 13px; font-weight: 700; color: #64748b; text-transform: none; cursor: pointer; }
         .toggle-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -71,7 +69,45 @@
         .toggle-switch input:checked + .toggle-slider { background: var(--p); }
         .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
 
-        .dim-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        /* Novo layout para múltiplos itens */
+        .item-row { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr) auto; 
+            gap: 8px; 
+            margin-bottom: 10px; 
+            align-items: end;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .item-row input { padding: 8px; font-size: 14px; }
+        
+        .btn-add-item { 
+            background: #f1f5f9; 
+            color: var(--p); 
+            border: 1px dashed var(--p); 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        .btn-add-item:hover { background: #e0f2fe; }
+        
+        .btn-rem-item { 
+            background: #ef4444; 
+            color: white; 
+            border: none; 
+            padding: 9px 12px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .btn-rem-item:hover { background: #dc2626; }
 
         .section-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f1f5f9; }
 
@@ -91,10 +127,11 @@
 
         .badge-cubado-info { display: inline-block; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 800; border-radius: 4px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
 
-        /* Ajuste para telas muito pequenas */
         @media (max-width: 380px) {
             .total { font-size: 20px; }
             .line { font-size: 12px; }
+            .item-row { grid-template-columns: repeat(2, 1fr); gap: 5px; }
+            .item-row div:last-child { grid-column: span 2; text-align: right; }
         }
     </style>
 </head>
@@ -106,13 +143,12 @@
         <a class="hist-link" href="historico.html">📋 Histórico</a>
     </div>
 
-<div style="margin-bottom: 15px;">
-    <a href="index_hub.html" style="text-decoration: none; color: var(--p); font-weight: bold; display: flex; align-items: center; gap: 5px;">
-        🏠 Início
-    </a>
-</div>
+    <div style="margin-bottom: 15px;">
+        <a href="index_hub.html" style="text-decoration: none; color: var(--p); font-weight: bold; display: flex; align-items: center; gap: 5px;">
+            🏠 Início
+        </a>
+    </div>
 
-   
     <div class="grid">
         <div class="full">
             <label>Praça de Destino</label>
@@ -135,23 +171,29 @@
         <div><label>Taxa Entrega (R$)</label><input type="number" id="entrega" value="0" min="0" step="0.01"></div>
     </div>
 
-    <!-- Peso Cubado -->
     <div style="margin-bottom: 20px;">
-        <div class="section-label">Peso Cubado (opcional)</div>
+        <div class="section-label">Peso Cubado Multi-Itens (opcional)</div>
         <div class="cubado-toggle">
             <label class="toggle-switch">
                 <input type="checkbox" id="toggleCubado" onchange="toggleDimensoes()">
                 <span class="toggle-slider"></span>
             </label>
-            <label for="toggleCubado">Calcular pelo peso cubado (A × L × C × 300)</label>
+            <label for="toggleCubado">Calcular pelo peso cubado (Alt × Lar × Comp × Qtd × 300)</label>
         </div>
+        
         <div id="dimWrap" style="display:none;">
-            <div class="dim-grid">
-                <div><label>Altura (m)</label><input type="number" id="alt" placeholder="0.00" min="0" step="0.01"></div>
-                <div><label>Largura (m)</label><input type="number" id="lar" placeholder="0.00" min="0" step="0.01"></div>
-                <div><label>Comprimento (m)</label><input type="number" id="comp" placeholder="0.00" min="0" step="0.01"></div>
+            <button type="button" class="btn-add-item" onclick="adicionarLinhaItem()">+ Adicionar Item</button>
+            
+            <div id="container-itens">
+                <div class="item-row">
+                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+                    <div><button type="button" class="btn-rem-item" style="visibility: hidden;">X</button></div>
+                </div>
             </div>
-            <div id="pesoCubadoInfo" style="font-size:12px; color:#64748b; margin-top:6px;"></div>
+            <div id="pesoCubadoInfo" style="font-size:12px; color:#64748b; margin-top:10px; font-weight: bold;"></div>
         </div>
     </div>
 
@@ -189,39 +231,27 @@
         const pracas = [...new Set(DATA_TABELAS.map(t => t.praca))].sort();
         pracas.forEach(p => sel.add(new Option(p, p)));
 
-        // Mostra o número atual ao carregar
         document.getElementById('rSeq').innerText = getSeq().toString().padStart(3, '0');
 
-        // Preencher via URLSearchParams (vindo do recotar)
         const params = new URLSearchParams(window.location.search);
-        if (params.has('praca')) {
-            sel.value = params.get('praca');
-        }
-        if (params.has('tipo')) {
-            document.getElementById('tipo').value = params.get('tipo');
-        }
-        if (params.has('peso')) {
-            document.getElementById('peso').value = params.get('peso');
-        }
-        if (params.has('vnf')) {
-            document.getElementById('vnf').value = params.get('vnf');
-        }
-        if (params.has('coleta')) {
-            document.getElementById('coleta').value = params.get('coleta');
-        }
-        if (params.has('entrega')) {
-            document.getElementById('entrega').value = params.get('entrega');
-        }
+        if (params.has('praca')) sel.value = params.get('praca');
+        if (params.has('tipo')) document.getElementById('tipo').value = params.get('tipo');
+        if (params.has('peso')) document.getElementById('peso').value = params.get('peso');
+        if (params.has('vnf')) document.getElementById('vnf').value = params.get('vnf');
+        if (params.has('coleta')) document.getElementById('coleta').value = params.get('coleta');
+        if (params.has('entrega')) document.getElementById('entrega').value = params.get('entrega');
 
+        // Adaptação caso venha dados antigos via URL
         const alt = params.get('alt') || '0';
         const lar = params.get('lar') || '0';
         const comp = params.get('comp') || '0';
         if (parseFloat(alt) > 0 && parseFloat(lar) > 0 && parseFloat(comp) > 0) {
             document.getElementById('toggleCubado').checked = true;
             document.getElementById('dimWrap').style.display = 'block';
-            document.getElementById('alt').value = alt;
-            document.getElementById('lar').value = lar;
-            document.getElementById('comp').value = comp;
+            const primeiraLinha = document.querySelector('.item-row');
+            primeiraLinha.querySelector('.alt').value = alt;
+            primeiraLinha.querySelector('.lar').value = lar;
+            primeiraLinha.querySelector('.comp').value = comp;
             atualizarPesoCubado();
         }
     }
@@ -230,37 +260,74 @@
         const ativo = document.getElementById('toggleCubado').checked;
         document.getElementById('dimWrap').style.display = ativo ? 'block' : 'none';
         if (!ativo) {
-            document.getElementById('alt').value = '';
-            document.getElementById('lar').value = '';
-            document.getElementById('comp').value = '';
+            // Limpa as linhas extras e reseta a primeira
+            const container = document.getElementById('container-itens');
+            container.innerHTML = `
+                <div class="item-row">
+                    <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+                    <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+                    <div><button type="button" class="btn-rem-item" style="visibility: hidden;">X</button></div>
+                </div>
+            `;
             document.getElementById('pesoCubadoInfo').textContent = '';
         }
     }
 
+    // Função para Adicionar Nova Linha Dinamicamente
+    function adicionarLinhaItem() {
+        const container = document.getElementById('container-itens');
+        const novaLinha = document.createElement('div');
+        novaLinha.className = 'item-row';
+        novaLinha.innerHTML = `
+            <div><label>Alt (m)</label><input type="number" class="alt" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+            <div><label>Lar (m)</label><input type="number" class="lar" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+            <div><label>Comp (m)</label><input type="number" class="comp" placeholder="0.00" min="0" step="0.01" oninput="atualizarPesoCubado()"></div>
+            <div><label>Qtd</label><input type="number" class="qtd" value="1" min="1" oninput="atualizarPesoCubado()"></div>
+            <div><button type="button" class="btn-rem-item" onclick="removerLinhaItem(this)">X</button></div>
+        `;
+        container.appendChild(novaLinha);
+    }
+
+    // Função para Remover Linha Dinamicamente
+    function removerLinhaItem(botao) {
+        botao.closest('.item-row').remove();
+        atualizarPesoCubado();
+    }
+
+    // Calcula o somatório da cubagem de todas as linhas informadas
+    function obterPesoCubadoTotal() {
+        const linhas = document.querySelectorAll('.item-row');
+        let pesoCubadoTotal = 0;
+
+        linhas.forEach(linha => {
+            const alt = parseFloat(linha.querySelector('.alt').value) || 0;
+            const lar = parseFloat(linha.querySelector('.lar').value) || 0;
+            const comp = parseFloat(linha.querySelector('.comp').value) || 0;
+            const qtd = parseInt(linha.querySelector('.qtd').value) || 0;
+
+            if (alt > 0 && lar > 0 && comp > 0 && qtd > 0) {
+                pesoCubadoTotal += (alt * lar * comp * qtd * 300);
+            }
+        });
+        return pesoCubadoTotal;
+    }
+
     function atualizarPesoCubado() {
-        const alt = parseFloat(document.getElementById('alt').value) || 0;
-        const lar = parseFloat(document.getElementById('lar').value) || 0;
-        const comp = parseFloat(document.getElementById('comp').value) || 0;
         const info = document.getElementById('pesoCubadoInfo');
-        if (alt > 0 && lar > 0 && comp > 0) {
-            const pc = alt * lar * comp * 300;
-            info.textContent = `Peso cubado: ${pc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg`;
+        const pc = obterPesoCubadoTotal();
+        
+        if (pc > 0) {
+            info.textContent = `Peso cubado total: ${pc.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} kg`;
         } else {
             info.textContent = '';
         }
     }
 
-    // Atualiza info ao digitar dimensões
-    ['alt','lar','comp'].forEach(id => {
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById(id)?.addEventListener('input', atualizarPesoCubado);
-        });
-    });
-
     function fmt(v) { return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
     function fmtKg(v) { return Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' kg'; }
 
-    // Resultado atual para salvar no histórico
     let _ultimoResultado = null;
 
     function calcular() {
@@ -276,12 +343,9 @@
         const d = DATA_TABELAS.find(x => x.praca === p && x.tipo === tType);
         if (!d) return alert("Dados não encontrados para esta praça/tabela.");
 
-        // Peso cubado
+        // Processamento Multi-Itens
         const usaCubado = document.getElementById('toggleCubado').checked;
-        const alt  = parseFloat(document.getElementById('alt').value)  || 0;
-        const lar  = parseFloat(document.getElementById('lar').value)   || 0;
-        const comp = parseFloat(document.getElementById('comp').value)  || 0;
-        const pesoCubado = (usaCubado && alt > 0 && lar > 0 && comp > 0) ? alt * lar * comp * 300 : 0;
+        const pesoCubado = usaCubado ? obterPesoCubadoTotal() : 0;
         const pesoTarifado = usaCubado && pesoCubado > pesoReal ? pesoCubado : pesoReal;
 
         const vBaseFixo = d.vBase;
@@ -296,7 +360,6 @@
         const transferencia = fretePesoTotal + gris + adv + ped;
         const total = transferencia + col + ent;
 
-        // Número de cotação atual
         const seq = getSeq();
 
         document.getElementById('rSeq').innerText = seq.toString().padStart(3, '0');
@@ -312,7 +375,6 @@
         document.getElementById('res').style.display = 'block';
         document.getElementById('btnPdf').style.display = 'block';
 
-        // Salvar no histórico
         const agora = new Date();
         const dataFmt = agora.toLocaleDateString('pt-BR') + ' ' + agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 
@@ -324,7 +386,6 @@
             pesoCubado,
             usaCubado: usaCubado && pesoCubado > pesoReal,
             pesoTarifado,
-            alt, lar, comp,
             vnf, col, ent,
             base: vBaseFixo,
             exc: valorExcedente,
@@ -338,7 +399,7 @@
         _ultimoResultado = entrada;
 
         const hist = getHistorico();
-        hist.unshift(entrada); // mais recente primeiro
+        hist.unshift(entrada);
         setHistorico(hist);
     }
 
