@@ -4,18 +4,90 @@
     <meta charset="UTF-8">
     <title>Painel Administrativo | Grupo UNO</title>
     <style>
-        :root { --p: #1d4ed8; --bg: #f8fafc; --txt: #1e293b; --danger: #ef4444; --success: #10b981; }
+        :root { 
+            --p: #1d4ed8; 
+            --bg: #f8fafc; 
+            --txt: #1e293b; 
+            --danger: #ef4444; 
+            --success: #10b981; 
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); margin: 0; padding: 20px; }
         .container { max-width: 1000px; margin: auto; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        h1 { color: var(--p); }
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        h1 { color: var(--p); margin: 0; }
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .card-menu { background: white; padding: 25px; border-radius: 15px; text-decoration: none; color: inherit; 
                     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); transition: 0.3s; border-left: 5px solid var(--p); }
         .card-menu:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
         .stat-value { font-size: 20px; font-weight: 800; color: var(--p); display: block; margin-top: 10px; }
         .atrasado { border-left-color: var(--danger); }
         .pago { border-left-color: var(--success); }
+
+        /* Estilos da Calculadora Express */
+        .express-card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 28px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border: 1px solid var(--border);
+            border-top: 4px solid var(--p);
+            margin-top: 10px;
+        }
+        .express-header h2 { font-size: 20px; color: var(--p); margin: 0 0 6px 0; text-transform: uppercase; }
+        .express-header p { color: var(--text-muted); font-size: 13px; margin: 0 0 20px 0; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 700; color: var(--txt); }
+        .form-group input, .form-group select {
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            color: var(--txt);
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus { border-color: var(--p); }
+        .tabs-calc { display: flex; gap: 10px; margin-bottom: 16px; }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: #f1f5f9;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .tab-btn.active { background: var(--p); color: #fff; border-color: var(--p); }
+        .btn-calc {
+            width: 100%;
+            background: var(--p);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+        .btn-calc:hover { opacity: 0.9; }
+
+        #res-box { display: none; margin-top: 24px; border-top: 2px dashed var(--border); padding-top: 20px; }
+        .res-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .res-item { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+        .res-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; }
+        .res-val { font-size: 15px; font-weight: 800; color: var(--txt); margin-top: 4px; }
+        .res-total-box { background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 10px; text-align: center; }
+        .res-total-box .res-val { font-size: 24px; color: var(--p); }
     </style>
 </head>
 <body>
@@ -24,25 +96,260 @@
             <h1>UNO TRANSPORTE</h1>
             <span id="dataAtual"></span>
         </div>
+
         <div class="grid-cards">
             <a href="index.html" class="card-menu"><strong>➕ Nova Cotação</strong><span>Cálculos e PDF</span></a>
             <a href="operacional.html" class="card-menu"><strong>🚛 Operacional</strong><span id="countPendentes" class="stat-value">0 pendentes</span></a>
             <a href="rastreio.html" class="card-menu atrasado"><strong>📍 Rastreio</strong><span id="countAtrasos" class="stat-value">0 alertas</span></a>
             <a href="financeiro.html" class="card-menu pago"><strong>💰 Financeiro</strong><span id="countFinanceiro" class="stat-value">R$ 0,00</span></a>
         </div>
+
+        <!-- ================= CALCULADORA TABELA EXPRESS ================= -->
+        <div class="express-card">
+            <div class="express-header">
+                <h2>⚡ Cotação Rápida Tabela Express</h2>
+                <p>Cálculo instantâneo de frete por praça, fora da base e dedicado</p>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Valor da NF (R$)</label>
+                    <input type="number" id="valorNF" placeholder="0,00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Peso Real (KG)</label>
+                    <input type="number" id="pesoReal" placeholder="0,00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Cubagem Total (m³)</label>
+                    <input type="number" id="cubagem" placeholder="0,000" step="0.001">
+                </div>
+            </div>
+
+            <div class="tabs-calc">
+                <button type="button" class="tab-btn active" onclick="setModo('fracionado')">Praça / Fora da Base</button>
+                <button type="button" class="tab-btn" onclick="setModo('dedicado')">Viagem Dedicada Direta</button>
+            </div>
+
+            <div id="box-fracionado">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Praça de Destino</label>
+                        <select id="pracaSelect"></select>
+                    </div>
+                    <div class="form-group">
+                        <label>KM Fora da Base (Opcional)</label>
+                        <input type="number" id="kmForaBase" placeholder="0" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Veículo Fora da Base</label>
+                        <select id="veiculoForaBase">
+                            <option value="fiorino">Fiorino (até 1,5 m³ - R$ 4,80/km)</option>
+                            <option value="van" selected>Van (até 8 m³ - R$ 8,00/km)</option>
+                            <option value="iveco">Iveco (até 15 m³ - R$ 16,50/km)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div id="box-dedicado" style="display: none;">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Distância Total KM (Somente Ida)</label>
+                        <input type="number" id="kmDedicado" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Veículo Dedicado</label>
+                        <select id="veiculoDedicado">
+                            <option value="fiorino">Fiorino (até 1,5 m³ - R$ 4,80/km)</option>
+                            <option value="van" selected>Van (até 8 m³ - R$ 8,00/km)</option>
+                            <option value="iveco">Iveco (até 15 m³ - R$ 16,50/km)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn-calc" onclick="calcularFreteExpress()">CALCULAR COTAÇÃO</button>
+
+            <div id="res-box">
+                <div class="res-grid">
+                    <div class="res-item">
+                        <div class="res-lbl">Peso Tarifado</div>
+                        <div class="res-val" id="resPesoTarifado">0 kg</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-lbl">GRIS (0,20%)</div>
+                        <div class="res-val" id="resGris">R$ 0,00</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-lbl">Ad Valorem (0,40%)</div>
+                        <div class="res-val" id="resAdValorem">R$ 0,00</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-lbl">Pedágio</div>
+                        <div class="res-val" id="resPedagio">R$ 0,00</div>
+                    </div>
+                    <div class="res-item">
+                        <div class="res-lbl" id="resExtraLabel">Frete Base / Praça</div>
+                        <div class="res-val" id="resExtraVal">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="res-total-box">
+                    <div class="res-lbl">Valor Final do Frete</div>
+                    <div class="res-val" id="resTotal">R$ 0,00</div>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script>
+        // Dados da Tabela Express
+        const PRACAS = [
+            { nome: "Araraquara - SP", min: 182.65, kg: 4.41 },
+            { nome: "Bauru - SP", min: 179.26, kg: 4.47 },
+            { nome: "Belo Horizonte - MG", min: 226.48, kg: 6.54 },
+            { nome: "Blumenau - SC", min: 221.95, kg: 7.17 },
+            { nome: "Brasília - DF", min: 250.42, kg: 9.36 },
+            { nome: "Campinas - SP", min: 150.88, kg: 2.82 },
+            { nome: "Campos dos Goytacazes - RJ", min: 209.83, kg: 8.88 },
+            { nome: "Caxias do Sul - RS", min: 310.21, kg: 13.80 },
+            { nome: "Chapecó - SC", min: 307.81, kg: 13.65 },
+            { nome: "Criciúma - SC", min: 234.52, kg: 7.68 },
+            { nome: "Curitiba - PR", min: 212.59, kg: 4.92 },
+            { nome: "Florianópolis - SC", min: 220.27, kg: 7.41 },
+            { nome: "Goiânia - GO", min: 245.29, kg: 9.00 },
+            { nome: "Itajaí - SC", min: 222.19, kg: 7.23 },
+            { nome: "Joinville - SC", min: 209.59, kg: 6.48 },
+            { nome: "Juiz de Fora - MG", min: 226.48, kg: 8.22 },
+            { nome: "Lages - SC", min: 245.29, kg: 9.00 },
+            { nome: "Londrina - PR", min: 200.95, kg: 6.39 },
+            { nome: "Marília - SP", min: 199.24, kg: 4.35 },
+            { nome: "Maringá - PR", min: 200.95, kg: 7.17 },
+            { nome: "Passo Fundo - RS", min: 309.04, kg: 13.74 },
+            { nome: "Porto Alegre - RS", min: 278.74, kg: 12.18 },
+            { nome: "Presidente Prudente - SP", min: 202.93, kg: 6.60 },
+            { nome: "Ribeirão Preto - SP", min: 182.65, kg: 4.41 },
+            { nome: "Rio de Janeiro - RJ", min: 199.30, kg: 4.74 },
+            { nome: "Santa Maria - RS", min: 329.05, kg: 13.95 },
+            { nome: "São José do Rio Preto - SP", min: 199.30, kg: 5.49 },
+            { nome: "São José dos Campos - SP", min: 150.88, kg: 2.82 },
+            { nome: "São Paulo - SP", min: 150.88, kg: 2.82 },
+            { nome: "Teresópolis - RJ", min: 201.16, kg: 5.49 },
+            { nome: "Uberaba - MG", min: 201.07, kg: 6.24 },
+            { nome: "Uberlândia - MG", min: 207.91, kg: 6.54 },
+            { nome: "Vitória - ES", min: 234.49, kg: 10.32 },
+            { nome: "Volta Redonda - RJ", min: 199.30, kg: 4.74 },
+            { nome: "Sorocaba - SP", min: 150.88, kg: 2.82 },
+            { nome: "Aracaju - SE", min: 293.65, kg: 13.68 },
+            { nome: "Maceió - AL", min: 304.84, kg: 14.19 },
+            { nome: "Montes Claros - MG", min: 262.00, kg: 10.02 },
+            { nome: "Recife - PE", min: 317.86, kg: 14.73 },
+            { nome: "Salvador - BA", min: 283.00, kg: 11.01 },
+            { nome: "Vitória da Conquista - BA", min: 274.00, kg: 10.53 }
+        ];
+
+        const VEICULOS = {
+            fiorino: { km: 4.80 },
+            van: { km: 8.00 },
+            iveco: { km: 16.50 }
+        };
+
+        let modoAtual = 'fracionado';
+
+        function setModo(modo) {
+            modoAtual = modo;
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+            if (modo === 'fracionado') {
+                btns[0].classList.add('active');
+                document.getElementById('box-fracionado').style.display = 'block';
+                document.getElementById('box-dedicado').style.display = 'none';
+            } else {
+                btns[1].classList.add('active');
+                document.getElementById('box-fracionado').style.display = 'none';
+                document.getElementById('box-dedicado').style.display = 'block';
+            }
+        }
+
+        function fmt(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function calcularFreteExpress() {
+            const valorNF = parseFloat(document.getElementById('valorNF').value) || 0;
+            const pesoReal = parseFloat(document.getElementById('pesoReal').value) || 0;
+            const cubagem = parseFloat(document.getElementById('cubagem').value) || 0;
+
+            const pesoCubado = cubagem * 300;
+            const pesoTarifado = Math.max(pesoReal, pesoCubado);
+
+            const gris = Math.max(valorNF * 0.002, 7.00);
+            const adValorem = valorNF * 0.004;
+
+            let fracoes = Math.ceil(pesoTarifado / 100);
+            if (fracoes === 0) fracoes = 1;
+            const pedagio = fracoes * 8.00;
+
+            let total = 0;
+
+            if (modoAtual === 'fracionado') {
+                const pracaIdx = parseInt(document.getElementById('pracaSelect').value);
+                const praca = PRACAS[pracaIdx];
+                const kmFora = parseFloat(document.getElementById('kmForaBase').value) || 0;
+                const veicKey = document.getElementById('veiculoForaBase').value;
+
+                const freteCalc = pesoTarifado * praca.kg;
+                const freteBase = Math.max(freteCalc, praca.min);
+                const custoExtra = kmFora * VEICULOS[veicKey].km;
+
+                total = freteBase + gris + adValorem + pedagio + custoExtra;
+
+                document.getElementById('resExtraLabel').innerText = kmFora > 0 ? `Frete Base + Extra (${kmFora} km)` : "Frete Base / Praça";
+                document.getElementById('resExtraVal').innerText = fmt(freteBase + custoExtra);
+                document.getElementById('resPedagio').innerText = fmt(pedagio);
+            } else {
+                const kmDed = parseFloat(document.getElementById('kmDedicado').value) || 0;
+                const veicKey = document.getElementById('veiculoDedicado').value;
+                const custoKm = kmDed * VEICULOS[veicKey].km;
+
+                total = custoKm + gris + adValorem;
+
+                document.getElementById('resExtraLabel').innerText = `KM Dedicado (${kmDed} km)`;
+                document.getElementById('resExtraVal').innerText = fmt(custoKm);
+                document.getElementById('resPedagio').innerText = "R$ 0,00 (Dedicado)";
+            }
+
+            document.getElementById('resPesoTarifado').innerText = `${pesoTarifado.toFixed(1)} kg`;
+            document.getElementById('resGris').innerText = fmt(gris);
+            document.getElementById('resAdValorem').innerText = fmt(adValorem);
+            document.getElementById('resTotal').innerText = fmt(total);
+
+            document.getElementById('res-box').style.display = 'block';
+        }
+
         window.onload = () => {
+            // 1. Carrega dados do painel existente
             const oper = JSON.parse(localStorage.getItem('uno_operacional')) || [];
             const hist = JSON.parse(localStorage.getItem('uno_historico')) || [];
             const hoje = new Date().toISOString().split('T')[0];
             const pendentes = hist.filter(h => !oper.find(o => o.seq === h.seq)).length;
             const atrasos = oper.filter(o => o.previsao < hoje && o.statusEntrega !== 'ENTREGUE').length;
             const aReceber = oper.filter(o => o.faturado && !o.pago).reduce((s, i) => s + i.total, 0);
+            
             document.getElementById('countPendentes').innerText = `${pendentes} pendentes`;
             document.getElementById('countAtrasos').innerText = `${atrasos} atrasos`;
             document.getElementById('countFinanceiro').innerText = aReceber.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
             document.getElementById('dataAtual').innerText = new Date().toLocaleDateString('pt-BR');
+
+            // 2. Popula o select de praças da calculadora
+            const selectEl = document.getElementById('pracaSelect');
+            PRACAS.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.innerText = `${p.nome} (Min: R$ ${p.min.toFixed(2)} | R$ ${p.kg.toFixed(2)}/kg)`;
+                selectEl.appendChild(opt);
+            });
         };
     </script>
 </body>
